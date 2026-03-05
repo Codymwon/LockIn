@@ -54,12 +54,15 @@ class AppConstants {
   };
 
   // ─── Achievement Definitions ───
+  // Types: 'streak' (days), 'activity' (counts), 'time' (special)
   static const List<Map<String, dynamic>> achievements = [
+    // ─── Streak Badges ───
     {
       'id': 'first_day',
       'title': 'First Day',
       'description': 'Complete your first day',
       'days': 1,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.plant,
     },
     {
@@ -67,13 +70,23 @@ class AppConstants {
       'title': '3 Day Starter',
       'description': 'Reach a 3-day streak',
       'days': 3,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.tree,
+    },
+    {
+      'id': 'five_days',
+      'title': '5 Day Focus',
+      'description': 'Your first work week conquered',
+      'days': 5,
+      'type': 'streak',
+      'icon': PhosphorIconsDuotone.target,
     },
     {
       'id': 'one_week',
       'title': '7 Day Warrior',
       'description': 'Survive an entire week',
       'days': 7,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.shield,
     },
     {
@@ -81,20 +94,39 @@ class AppConstants {
       'title': '14 Day Fighter',
       'description': 'Two weeks of discipline',
       'days': 14,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.shieldCheck,
+    },
+    {
+      'id': 'twenty_one_days',
+      'title': '21 Day Habit',
+      'description': 'They say 21 days builds a habit',
+      'days': 21,
+      'type': 'streak',
+      'icon': PhosphorIconsDuotone.brain,
     },
     {
       'id': 'one_month',
       'title': '30 Day Master',
       'description': 'A full month of control',
       'days': 30,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.medal,
+    },
+    {
+      'id': 'forty_five',
+      'title': '45 Day Halfway',
+      'description': 'Halfway to legend status',
+      'days': 45,
+      'type': 'streak',
+      'icon': PhosphorIconsDuotone.mapTrifold,
     },
     {
       'id': 'sixty_days',
       'title': '60 Day Veteran',
       'description': 'Two months strong',
       'days': 60,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.diamond,
     },
     {
@@ -102,21 +134,105 @@ class AppConstants {
       'title': '90 Day Legend',
       'description': 'The ultimate milestone',
       'days': 90,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.trophy,
+    },
+    {
+      'id': 'one_twenty',
+      'title': '120 Day Centurion',
+      'description': 'Four months of iron will',
+      'days': 120,
+      'type': 'streak',
+      'icon': PhosphorIconsDuotone.shieldStar,
     },
     {
       'id': 'half_year',
       'title': '180 Day Titan',
       'description': 'Half a year of strength',
       'days': 180,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.star,
+    },
+    {
+      'id': 'two_seventy',
+      'title': '270 Day Marathon',
+      'description': 'Nine months. Born again.',
+      'days': 270,
+      'type': 'streak',
+      'icon': PhosphorIconsDuotone.circlesFour,
     },
     {
       'id': 'one_year',
       'title': '365 Day Immortal',
       'description': 'A full year. Unstoppable.',
       'days': 365,
+      'type': 'streak',
       'icon': PhosphorIconsDuotone.crown,
+    },
+
+    // ─── Activity Badges ───
+    {
+      'id': 'urge_slayer',
+      'title': 'Urge Slayer',
+      'description': 'Survive your first urge',
+      'type': 'activity',
+      'requirement': 1,
+      'category': 'urge',
+      'icon': PhosphorIconsDuotone.heartbeat,
+    },
+    {
+      'id': 'five_urges',
+      'title': '5 Urges Conquered',
+      'description': 'Beat 5 urges — getting stronger',
+      'type': 'activity',
+      'requirement': 5,
+      'category': 'urge',
+      'icon': PhosphorIconsDuotone.barbell,
+    },
+    {
+      'id': 'journaler',
+      'title': 'Journaler',
+      'description': 'Write your first journal entry',
+      'type': 'activity',
+      'requirement': 1,
+      'category': 'journal',
+      'icon': PhosphorIconsDuotone.pencilLine,
+    },
+    {
+      'id': 'consistent_writer',
+      'title': 'Consistent Writer',
+      'description': 'Write 10 journal entries',
+      'type': 'activity',
+      'requirement': 10,
+      'category': 'journal',
+      'icon': PhosphorIconsDuotone.bookOpenText,
+    },
+    {
+      'id': 'comeback_king',
+      'title': 'Comeback King',
+      'description': 'Start a new streak after a relapse',
+      'type': 'activity',
+      'requirement': 1,
+      'category': 'relapse',
+      'icon': PhosphorIconsDuotone.arrowClockwise,
+    },
+
+    // ─── Time-Based Badges ───
+    {
+      'id': 'night_owl',
+      'title': 'Night Owl',
+      'description': 'Survive an urge after midnight',
+      'type': 'time',
+      'timeCheck': 'night',
+      'icon': PhosphorIconsDuotone.moonStars,
+    },
+    {
+      'id': 'early_riser',
+      'title': 'Early Riser',
+      'description': 'Log a journal before 8 AM',
+      'type': 'time',
+      'timeCheck': 'morning',
+      'icon': PhosphorIconsDuotone.sun,
     },
   ];
 

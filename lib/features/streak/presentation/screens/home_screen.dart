@@ -35,12 +35,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   int _getNextMilestone(int currentStreak) {
     for (final achievement in AppConstants.achievements) {
+      if (achievement['type'] != 'streak') continue;
       final days = achievement['days'] as int;
       if (days > currentStreak) {
         return days;
       }
     }
-    return currentStreak + 365; // Fallback if all achievements completed
+    return currentStreak + 365;
+  }
+
+  int _getPreviousMilestone(int currentStreak) {
+    int prev = 0;
+    for (final achievement in AppConstants.achievements) {
+      if (achievement['type'] != 'streak') continue;
+      final days = achievement['days'] as int;
+      if (days <= currentStreak) {
+        prev = days;
+      }
+    }
+    return prev;
   }
 
   @override
@@ -132,6 +145,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 // Streak ring (combined view)
                 StreakRing(
                   currentStreak: streak.currentStreak,
+                  targetDays: _getNextMilestone(streak.currentStreak),
+                  previousMilestone: _getPreviousMilestone(
+                    streak.currentStreak,
+                  ),
                   icon: streak.progressIcon,
                   streakStartDate: streak.streakStartDate,
                 ),

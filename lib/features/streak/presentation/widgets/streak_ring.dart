@@ -12,6 +12,7 @@ import 'package:lock_in/core/theme/app_theme.dart';
 class StreakRing extends StatefulWidget {
   final int currentStreak;
   final int targetDays;
+  final int previousMilestone;
   final IconData icon;
   final DateTime? streakStartDate;
 
@@ -19,6 +20,7 @@ class StreakRing extends StatefulWidget {
     super.key,
     required this.currentStreak,
     this.targetDays = 90,
+    this.previousMilestone = 0,
     required this.icon,
     this.streakStartDate,
   });
@@ -53,7 +55,8 @@ class _StreakRingState extends State<StreakRing>
   @override
   void didUpdateWidget(StreakRing oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.currentStreak != widget.currentStreak) {
+    if (oldWidget.currentStreak != widget.currentStreak ||
+        oldWidget.streakStartDate != widget.streakStartDate) {
       _updateAnimation();
       _controller.forward(from: 0);
     }
@@ -69,7 +72,16 @@ class _StreakRingState extends State<StreakRing>
   }
 
   void _updateAnimation() {
-    final progress = (widget.currentStreak / widget.targetDays).clamp(0.0, 1.0);
+    final range = widget.targetDays - widget.previousMilestone;
+    // Use fractional days for smooth intra-day progress
+    double elapsed = widget.currentStreak.toDouble();
+    if (widget.streakStartDate != null) {
+      elapsed =
+          DateTime.now().difference(widget.streakStartDate!).inSeconds /
+          86400.0; // seconds in a day
+    }
+    final done = elapsed - widget.previousMilestone;
+    final progress = range > 0 ? (done / range).clamp(0.0, 1.0) : 0.0;
     _progressAnim = Tween<double>(
       begin: 0,
       end: progress,

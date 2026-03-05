@@ -14,9 +14,9 @@ class StatsScreen extends ConsumerWidget {
 
   Map<String, dynamic> _getNextMilestone(int currentStreak) {
     for (final a in AppConstants.achievements) {
+      if (a['type'] != 'streak') continue;
       if ((a['days'] as int) > currentStreak) return a;
     }
-    // All milestones reached — return a "beyond" milestone
     return {
       'title': 'Beyond Legend',
       'days': currentStreak + 365,
@@ -27,6 +27,7 @@ class StatsScreen extends ConsumerWidget {
   Map<String, dynamic>? _getCurrentMilestone(int currentStreak) {
     Map<String, dynamic>? current;
     for (final a in AppConstants.achievements) {
+      if (a['type'] != 'streak') continue;
       if ((a['days'] as int) <= currentStreak) current = a;
     }
     return current;

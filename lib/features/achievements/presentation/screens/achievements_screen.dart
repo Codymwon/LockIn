@@ -190,16 +190,6 @@ class _AchievementCard extends StatelessWidget {
                 ],
               ),
             ),
-            Text(
-              '${achievement.requiredDays}d',
-              style: TextStyle(
-                color: achievement.unlocked
-                    ? AppColors.accent
-                    : AppColors.textSecondary,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-              ),
-            ),
           ],
         ),
       ),
