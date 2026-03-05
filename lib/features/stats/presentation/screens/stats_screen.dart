@@ -4,7 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
-import 'package:lock_in/core/utils/date_utils.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:lock_in/features/stats/presentation/providers/stats_provider.dart';
 import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
@@ -33,15 +33,6 @@ class StatsScreen extends ConsumerWidget {
     return current;
   }
 
-  String _formatSurvivalTime(int seconds) {
-    if (seconds < 60) return '${seconds}s';
-    final m = seconds ~/ 60;
-    final s = seconds % 60;
-    if (m < 60) return '${m}m ${s}s';
-    final h = m ~/ 60;
-    return '${h}h ${m % 60}m';
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(statsProvider);
@@ -57,9 +48,6 @@ class StatsScreen extends ConsumerWidget {
     final progress = nextDays > prevDays
         ? (stats.currentStreak - prevDays) / (nextDays - prevDays)
         : 0.0;
-
-    // Recent urge events (last 5)
-    final recentUrges = urge.events.take(5).toList();
 
     return Scaffold(
       body: Container(
@@ -220,7 +208,7 @@ class StatsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // ─── Recent Urges ───
+                // ─── Urge Heatmap ───
                 GlassCard(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -229,120 +217,30 @@ class StatsScreen extends ConsumerWidget {
                       Row(
                         children: [
                           Icon(
-                            PhosphorIconsDuotone.shieldCheck,
+                            PhosphorIconsDuotone.fire,
                             size: 18,
-                            color: AppColors.success,
+                            color: const Color(0xFFEF5350),
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Recent Urges Survived',
+                            'Urge Heatmap',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ],
                       ),
                       const SizedBox(height: 14),
-                      if (recentUrges.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Center(
-                            child: Text(
-                              'No urges logged yet — stay strong!',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        ...recentUrges.asMap().entries.map((entry) {
-                          final i = entry.key;
-                          final e = entry.value;
-                          return Column(
-                            children: [
-                              if (i > 0)
-                                Divider(
-                                  color: AppColors.cardBorder.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  height: 1,
-                                ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.success.withValues(
-                                          alpha: 0.12,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        PhosphorIconsDuotone.heartbeat,
-                                        size: 16,
-                                        color: AppColors.success,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            AppDateUtils.formatDate(
-                                              e.timestamp,
-                                            ),
-                                            style: TextStyle(
-                                              color: AppColors.textPrimary,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          Text(
-                                            AppDateUtils.formatTime(
-                                              e.timestamp,
-                                            ),
-                                            style: TextStyle(
-                                              color: AppColors.textSecondary
-                                                  .withValues(alpha: 0.6),
-                                              fontSize: 11,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.success.withValues(
-                                          alpha: 0.12,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        _formatSurvivalTime(e.survivalSeconds),
-                                        style: TextStyle(
-                                          color: AppColors.success,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
+                      Text(
+                        'Time of day when you experience the most urges.',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 180,
+                        child: _UrgeHeatmapChart(events: urge.events),
+                      ),
                     ],
                   ),
                 ),
@@ -446,5 +344,172 @@ class _BigStatCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _UrgeHeatmapChart extends StatelessWidget {
+  final List<UrgeEvent> events;
+
+  const _UrgeHeatmapChart({required this.events});
+
+  @override
+  Widget build(BuildContext context) {
+    // 8 bins of 3 hours each
+    final List<int> bins = List.filled(8, 0);
+    for (final e in events) {
+      final hour = e.timestamp.hour;
+      final binIndex = hour ~/ 3;
+      bins[binIndex]++;
+    }
+
+    int maxCount = 0;
+    for (final count in bins) {
+      if (count > maxCount) maxCount = count;
+    }
+
+    final maxY = maxCount == 0 ? 1.0 : (maxCount + 1).toDouble();
+
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxY,
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (group) => AppColors.surfaceLight,
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              return BarTooltipItem(
+                '${rod.toY.toInt()} urges\n',
+                const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                children: [
+                  TextSpan(
+                    text: _getBinLabel(groupIndex),
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    _getBinShortLabel(value.toInt()),
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              },
+              reservedSize: 28,
+            ),
+          ),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: maxCount > 0
+              ? (maxCount / 4).clamp(1, double.infinity).ceilToDouble()
+              : 1,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: AppColors.surfaceLight.withValues(alpha: 0.2),
+            strokeWidth: 1,
+            dashArray: [4, 4],
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: List.generate(8, (i) {
+          return BarChartGroupData(
+            x: i,
+            barRods: [
+              BarChartRodData(
+                toY: bins[i].toDouble(),
+                color: const Color(0xFFEF5350), // Reddish
+                width: 16,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(4),
+                ),
+                backDrawRodData: BackgroundBarChartRodData(
+                  show: true,
+                  toY: maxY,
+                  color: AppColors.surfaceLight.withValues(alpha: 0.3),
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  String _getBinLabel(int index) {
+    switch (index) {
+      case 0:
+        return '12 AM - 3 AM';
+      case 1:
+        return '3 AM - 6 AM';
+      case 2:
+        return '6 AM - 9 AM';
+      case 3:
+        return '9 AM - 12 PM';
+      case 4:
+        return '12 PM - 3 PM';
+      case 5:
+        return '3 PM - 6 PM';
+      case 6:
+        return '6 PM - 9 PM';
+      case 7:
+        return '9 PM - 12 AM';
+      default:
+        return '';
+    }
+  }
+
+  String _getBinShortLabel(int index) {
+    switch (index) {
+      case 0:
+        return '12a';
+      case 1:
+        return '3a';
+      case 2:
+        return '6a';
+      case 3:
+        return '9a';
+      case 4:
+        return '12p';
+      case 5:
+        return '3p';
+      case 6:
+        return '6p';
+      case 7:
+        return '9p';
+      default:
+        return '';
+    }
   }
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
+import 'package:lock_in/core/providers/haptics_provider.dart';
 import 'package:lock_in/core/utils/date_utils.dart';
 import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
 import 'package:lock_in/features/stats/presentation/providers/stats_provider.dart';
@@ -136,6 +137,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final streak = ref.watch(streakProvider);
     final isAmoled = ref.watch(themeProvider);
+    final isHapticsEnabled = ref.watch(hapticsProvider);
     final c = AppColorScheme.of(isAmoled);
     final startDate = _previewDate ?? streak.streakStartDate;
     final now = DateTime.now();
@@ -171,7 +173,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           size: 22,
                         ),
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          ref.read(hapticsProvider.notifier).lightImpact();
                           context.pop();
                         },
                         splashRadius: 24,
@@ -245,8 +247,73 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               Switch.adaptive(
                                 value: isAmoled,
                                 onChanged: (_) {
-                                  HapticFeedback.selectionClick();
+                                  ref
+                                      .read(hapticsProvider.notifier)
+                                      .selectionClick();
                                   ref.read(themeProvider.notifier).toggle();
+                                },
+                                activeColor: c.primary,
+                                activeTrackColor: c.primary.withValues(
+                                  alpha: 0.3,
+                                ),
+                                inactiveThumbColor: c.textSecondary,
+                                inactiveTrackColor: c.surfaceLight.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      GlassCard(
+                        padding: const EdgeInsets.all(0),
+                        borderRadius: 16,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          child: Row(
+                            children: [
+                              _SettingIcon(
+                                color: isHapticsEnabled
+                                    ? c.primary
+                                    : c.textSecondary,
+                                icon: PhosphorIconsDuotone.vibrate,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Haptic Feedback',
+                                      style: TextStyle(
+                                        color: c.textPrimary,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Vibrations on taps and actions',
+                                      style: TextStyle(
+                                        color: c.textSecondary.withValues(
+                                          alpha: 0.8,
+                                        ),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch.adaptive(
+                                value: isHapticsEnabled,
+                                onChanged: (_) {
+                                  ref.read(hapticsProvider.notifier).toggle();
                                 },
                                 activeColor: c.primary,
                                 activeTrackColor: c.primary.withValues(

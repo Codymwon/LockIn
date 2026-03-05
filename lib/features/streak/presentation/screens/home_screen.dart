@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
+import 'package:lock_in/core/providers/haptics_provider.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
 import 'package:lock_in/features/streak/presentation/widgets/streak_ring.dart';
@@ -90,7 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           size: 20,
                         ),
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          ref.read(hapticsProvider.notifier).lightImpact();
                           context.push('/settings');
                         },
                         tooltip: 'Settings',
@@ -122,7 +123,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             size: 20,
                           ),
                           onPressed: () {
-                            HapticFeedback.lightImpact();
+                            ref.read(hapticsProvider.notifier).lightImpact();
                             showDialog(
                               context: context,
                               builder: (_) => ResetDialog(

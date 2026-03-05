@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
+import 'package:lock_in/core/providers/haptics_provider.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
 import 'package:lock_in/shared/widgets/glow_button.dart';
@@ -68,7 +69,7 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
       }
       if (phase != _breathPhase) {
         setState(() => _breathPhase = phase);
-        HapticFeedback.lightImpact();
+        ref.read(hapticsProvider.notifier).lightImpact();
       }
     });
 
@@ -135,7 +136,7 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
                         size: 24,
                       ),
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        ref.read(hapticsProvider.notifier).lightImpact();
                         if (_isActive) _stopBreathing();
                         Navigator.of(context).pop();
                       },

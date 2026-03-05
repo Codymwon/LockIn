@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lock_in/core/providers/haptics_provider.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 
 /// A button with a neon glow effect and press animation.
-class GlowButton extends StatefulWidget {
+class GlowButton extends ConsumerStatefulWidget {
   final String text;
   final VoidCallback onPressed;
   final Color? color;
@@ -26,10 +28,10 @@ class GlowButton extends StatefulWidget {
   });
 
   @override
-  State<GlowButton> createState() => _GlowButtonState();
+  ConsumerState<GlowButton> createState() => _GlowButtonState();
 }
 
-class _GlowButtonState extends State<GlowButton>
+class _GlowButtonState extends ConsumerState<GlowButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnim;
@@ -68,7 +70,7 @@ class _GlowButtonState extends State<GlowButton>
       },
       child: GestureDetector(
         onTapDown: (_) {
-          HapticFeedback.lightImpact();
+          ref.read(hapticsProvider.notifier).lightImpact();
           _controller.forward();
         },
         onTapUp: (_) {

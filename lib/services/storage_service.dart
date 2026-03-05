@@ -128,4 +128,14 @@ class StorageService {
   static Future<void> setAmoledTheme(bool enabled) async {
     await _prefs.setBool(_amoledThemeKey, enabled);
   }
+
+  // ─── Haptics ───
+
+  static const _hapticsEnabledKey = 'haptics_enabled';
+
+  static bool getHapticsEnabled() => _prefs.getBool(_hapticsEnabledKey) ?? true;
+
+  static Future<void> setHapticsEnabled(bool enabled) async {
+    await _prefs.setBool(_hapticsEnabledKey, enabled);
+  }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lock_in/core/providers/haptics_provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 
 /// Custom bottom navigation bar matching the dark purple theme.
-class AppBottomNav extends StatelessWidget {
+class AppBottomNav extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -15,7 +17,7 @@ class AppBottomNav extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
@@ -62,7 +64,7 @@ class AppBottomNav extends StatelessWidget {
   }
 }
 
-class _NavItem extends StatelessWidget {
+class _NavItem extends ConsumerWidget {
   final IconData icon;
   final String label;
   final bool isActive;
@@ -76,11 +78,13 @@ class _NavItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        if (ref.read(hapticsProvider)) {
+          HapticFeedback.selectionClick();
+        }
         onTap();
       },
       behavior: HitTestBehavior.opaque,

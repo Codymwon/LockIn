@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
+import 'package:lock_in/core/providers/haptics_provider.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/core/utils/date_utils.dart';
 import 'package:lock_in/features/journal/presentation/providers/journal_provider.dart';
@@ -42,7 +43,7 @@ class JournalScreen extends ConsumerWidget {
                         size: 24,
                       ),
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        ref.read(hapticsProvider.notifier).lightImpact();
                         Navigator.of(context).pop();
                       },
                       color: AppColors.textSecondary,
@@ -92,7 +93,9 @@ class JournalScreen extends ConsumerWidget {
                                 ),
                               ),
                               onDismissed: (_) {
-                                HapticFeedback.mediumImpact();
+                                ref
+                                    .read(hapticsProvider.notifier)
+                                    .mediumImpact();
                                 ref
                                     .read(journalProvider.notifier)
                                     .deleteEntry(entry.index);
