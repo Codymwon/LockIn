@@ -67,7 +67,7 @@ class StatsScreen extends ConsumerWidget {
                       child: _BigStatCard(
                         title: 'Total Clean',
                         value: '${stats.totalCleanDays}',
-                        icon: PhosphorIconsDuotone.sparkle,
+                        icon: PhosphorIconsDuotone.sunHorizon,
                         color: AppColors.primary,
                       ),
                     ),

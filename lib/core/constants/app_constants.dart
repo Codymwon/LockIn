@@ -42,7 +42,7 @@ class AppConstants {
   // ─── Progress Icons (replaces emoji metaphors) ───
   static const Map<int, IconData> progressIcons = {
     0: PhosphorIconsDuotone.drop,
-    1: PhosphorIconsDuotone.sparkle,
+    1: PhosphorIconsDuotone.plant,
     3: PhosphorIconsDuotone.fire,
     7: PhosphorIconsDuotone.flame,
     14: PhosphorIconsDuotone.shieldCheck,
