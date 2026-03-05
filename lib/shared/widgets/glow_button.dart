@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 
 /// A button with a neon glow effect and press animation.
@@ -66,7 +67,10 @@ class _GlowButtonState extends State<GlowButton>
         return Transform.scale(scale: _scaleAnim.value, child: child);
       },
       child: GestureDetector(
-        onTapDown: (_) => _controller.forward(),
+        onTapDown: (_) {
+          HapticFeedback.lightImpact();
+          _controller.forward();
+        },
         onTapUp: (_) {
           _controller.reverse();
           widget.onPressed();

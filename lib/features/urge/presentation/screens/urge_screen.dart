@@ -135,6 +135,7 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
                         size: 24,
                       ),
                       onPressed: () {
+                        HapticFeedback.lightImpact();
                         if (_isActive) _stopBreathing();
                         Navigator.of(context).pop();
                       },

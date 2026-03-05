@@ -88,12 +88,12 @@ class AchievementsNotifier extends Notifier<AchievementsState> {
               label = 'midnight';
               break;
             case 'morning':
-              // Check if any journal was logged before 8 AM
+              // Check if any journal was logged between 5 AM and 8 AM
               unlocked = journal.entries.any((e) {
                 final hour = e.timestamp.hour;
-                return hour < 8;
+                return hour >= 5 && hour < 8;
               });
-              label = 'early';
+              label = '5am - 8am';
               break;
           }
           break;

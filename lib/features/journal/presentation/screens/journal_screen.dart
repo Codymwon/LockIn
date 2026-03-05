@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/core/utils/date_utils.dart';
 import 'package:lock_in/features/journal/presentation/providers/journal_provider.dart';
+import 'package:lock_in/services/storage_service.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
 import 'package:lock_in/shared/widgets/glow_button.dart';
 
@@ -39,7 +41,10 @@ class JournalScreen extends ConsumerWidget {
                         PhosphorIconsDuotone.caretLeft,
                         size: 24,
                       ),
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).pop();
+                      },
                       color: AppColors.textSecondary,
                     ),
                     const Spacer(),
@@ -70,21 +75,24 @@ class JournalScreen extends ConsumerWidget {
                             child: Dismissible(
                               key: ValueKey(entry.timestamp),
                               direction: DismissDirection.endToStart,
-                              background: Container(
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.only(right: 20),
-                                decoration: BoxDecoration(
-                                  color: AppColors.warning.withValues(
-                                    alpha: 0.2,
+                              background: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 20),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warning.withValues(
+                                      alpha: 0.2,
+                                    ),
                                   ),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: const Icon(
-                                  PhosphorIconsDuotone.trash,
-                                  color: AppColors.warning,
+                                  child: const Icon(
+                                    PhosphorIconsDuotone.trash,
+                                    color: AppColors.warning,
+                                  ),
                                 ),
                               ),
                               onDismissed: (_) {
+                                HapticFeedback.mediumImpact();
                                 ref
                                     .read(journalProvider.notifier)
                                     .deleteEntry(entry.index);
@@ -239,10 +247,48 @@ class JournalScreen extends ConsumerWidget {
                     text: 'SAVE ENTRY',
                     onPressed: () {
                       if (controller.text.trim().isNotEmpty) {
+                        final currentEntries = ref
+                            .read(journalProvider)
+                            .entries
+                            .length;
                         ref
                             .read(journalProvider.notifier)
                             .addEntry(controller.text.trim());
                         Navigator.of(context).pop();
+
+                        if (currentEntries == 0 &&
+                            !StorageService.getHasShownJournalDeleteTip()) {
+                          StorageService.setHasShownJournalDeleteTip(true);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  Icon(
+                                    PhosphorIconsDuotone.lightbulb,
+                                    color: AppColors.primary,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Text(
+                                      'Tip: Swipe left on a journal entry to delete it.',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: AppColors.surfaceLight,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              margin: const EdgeInsets.all(16),
+                              duration: const Duration(seconds: 4),
+                            ),
+                          );
+                        }
                       }
                     },
                     height: 52,

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -88,7 +89,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: AppColors.textSecondary.withValues(alpha: 0.5),
                           size: 20,
                         ),
-                        onPressed: () => context.push('/settings'),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          context.push('/settings');
+                        },
                         tooltip: 'Settings',
                         splashRadius: 24,
                         padding: EdgeInsets.zero,
@@ -118,6 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             size: 20,
                           ),
                           onPressed: () {
+                            HapticFeedback.lightImpact();
                             showDialog(
                               context: context,
                               builder: (_) => ResetDialog(

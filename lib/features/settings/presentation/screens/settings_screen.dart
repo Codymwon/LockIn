@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -169,7 +170,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           color: c.textSecondary.withValues(alpha: 0.7),
                           size: 22,
                         ),
-                        onPressed: () => context.pop(),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          context.pop();
+                        },
                         splashRadius: 24,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -240,8 +244,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ),
                               Switch.adaptive(
                                 value: isAmoled,
-                                onChanged: (_) =>
-                                    ref.read(themeProvider.notifier).toggle(),
+                                onChanged: (_) {
+                                  HapticFeedback.selectionClick();
+                                  ref.read(themeProvider.notifier).toggle();
+                                },
                                 activeColor: c.primary,
                                 activeTrackColor: c.primary.withValues(
                                   alpha: 0.3,

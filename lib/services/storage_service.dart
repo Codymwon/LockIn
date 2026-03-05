@@ -110,6 +110,17 @@ class StorageService {
     await _journalBox.clear();
   }
 
+  // ─── App Preferences / Tips ───
+
+  static const _journalDeleteTipKey = 'journal_delete_tip_shown';
+
+  static bool getHasShownJournalDeleteTip() =>
+      _prefs.getBool(_journalDeleteTipKey) ?? false;
+
+  static Future<void> setHasShownJournalDeleteTip(bool shown) async {
+    await _prefs.setBool(_journalDeleteTipKey, shown);
+  }
+
   // ─── Theme ───
 
   static bool getAmoledTheme() => _prefs.getBool(_amoledThemeKey) ?? false;
