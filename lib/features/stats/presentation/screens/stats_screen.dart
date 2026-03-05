@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/features/stats/presentation/providers/stats_provider.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
@@ -44,7 +45,7 @@ class StatsScreen extends ConsumerWidget {
                       child: _BigStatCard(
                         title: 'Success Rate',
                         value: '${stats.successRate.toStringAsFixed(0)}%',
-                        icon: Icons.trending_up_rounded,
+                        icon: PhosphorIconsDuotone.trendUp,
                         color: AppColors.success,
                       ),
                     ),
@@ -53,7 +54,7 @@ class StatsScreen extends ConsumerWidget {
                       child: _BigStatCard(
                         title: 'Longest Streak',
                         value: '${stats.longestStreak}',
-                        icon: Icons.emoji_events_rounded,
+                        icon: PhosphorIconsDuotone.trophy,
                         color: const Color(0xFFFFD54F),
                       ),
                     ),
@@ -66,7 +67,7 @@ class StatsScreen extends ConsumerWidget {
                       child: _BigStatCard(
                         title: 'Total Clean',
                         value: '${stats.totalCleanDays}',
-                        icon: Icons.auto_awesome_rounded,
+                        icon: PhosphorIconsDuotone.sparkle,
                         color: AppColors.primary,
                       ),
                     ),
@@ -75,7 +76,7 @@ class StatsScreen extends ConsumerWidget {
                       child: _BigStatCard(
                         title: 'Urges Beat',
                         value: '${stats.totalUrges}',
-                        icon: Icons.fitness_center_rounded,
+                        icon: PhosphorIconsDuotone.barbell,
                         color: AppColors.accent,
                       ),
                     ),
@@ -92,7 +93,7 @@ class StatsScreen extends ConsumerWidget {
                       Row(
                         children: [
                           Icon(
-                            Icons.insights_rounded,
+                            PhosphorIconsDuotone.chartLineUp,
                             size: 18,
                             color: AppColors.accent,
                           ),
@@ -196,7 +197,7 @@ class StatsScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          Icons.refresh_rounded,
+                          PhosphorIconsDuotone.arrowCounterClockwise,
                           color: AppColors.warning,
                           size: 22,
                         ),

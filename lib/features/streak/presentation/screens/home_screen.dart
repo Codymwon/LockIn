@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
@@ -135,7 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       child: _StatCard(
                         label: 'Best',
                         value: '${streak.longestStreak}',
-                        icon: Icons.emoji_events_rounded,
+                        icon: PhosphorIconsDuotone.trophy,
                         iconColor: const Color(0xFFFFD54F),
                       ),
                     ),
@@ -145,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         label: 'Total Days',
                         value:
                             '${streak.totalCleanDays + streak.currentStreak}',
-                        icon: Icons.bar_chart_rounded,
+                        icon: PhosphorIconsDuotone.chartBar,
                         iconColor: AppColors.accent,
                       ),
                     ),
@@ -154,7 +155,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       child: _StatCard(
                         label: 'Resets',
                         value: '${streak.relapseCount}',
-                        icon: Icons.refresh_rounded,
+                        icon: PhosphorIconsDuotone.arrowCounterClockwise,
                         iconColor: AppColors.textSecondary,
                       ),
                     ),
@@ -171,7 +172,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     },
                     width: double.infinity,
                     height: 56,
-                    icon: Icons.play_arrow_rounded,
+                    icon: PhosphorIconsDuotone.play,
                   ),
                 ] else ...[
                   Row(
@@ -184,7 +185,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           },
                           color: AppColors.accent,
                           height: 52,
-                          icon: Icons.warning_amber_rounded,
+                          icon: PhosphorIconsDuotone.warningOctagon,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -196,7 +197,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           },
                           color: AppColors.surfaceLight,
                           height: 52,
-                          icon: Icons.edit_note_rounded,
+                          icon: PhosphorIconsDuotone.bookOpenText,
                         ),
                       ),
                     ],
@@ -217,7 +218,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       );
                     },
                     icon: const Icon(
-                      Icons.refresh_rounded,
+                      PhosphorIconsDuotone.arrowCounterClockwise,
                       color: AppColors.warning,
                       size: 18,
                     ),

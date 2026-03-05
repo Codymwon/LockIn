@@ -148,7 +148,7 @@ class _StreakRingState extends State<StreakRing>
                       fontSize: 12,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   // 4. Mini Timer (Hours Mins Secs)
                   if (widget.streakStartDate != null)

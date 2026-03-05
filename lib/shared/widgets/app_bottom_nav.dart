@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 
 /// Custom bottom navigation bar matching the dark purple theme.
@@ -28,25 +29,25 @@ class AppBottomNav extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _NavItem(
-                icon: Icons.home_rounded,
+                icon: PhosphorIconsDuotone.house,
                 label: 'Home',
                 isActive: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
               _NavItem(
-                icon: Icons.calendar_month_rounded,
+                icon: PhosphorIconsDuotone.calendarBlank,
                 label: 'Calendar',
                 isActive: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
               _NavItem(
-                icon: Icons.bar_chart_rounded,
+                icon: PhosphorIconsDuotone.chartBar,
                 label: 'Stats',
                 isActive: currentIndex == 2,
                 onTap: () => onTap(2),
               ),
               _NavItem(
-                icon: Icons.emoji_events_rounded,
+                icon: PhosphorIconsDuotone.medal,
                 label: 'Badges',
                 isActive: currentIndex == 3,
                 onTap: () => onTap(3),

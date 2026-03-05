@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class AppConstants {
   // ─── Motivational Quotes ───
@@ -40,16 +41,16 @@ class AppConstants {
 
   // ─── Progress Icons (replaces emoji metaphors) ───
   static const Map<int, IconData> progressIcons = {
-    0: Icons.water_drop_outlined,
-    1: Icons.auto_awesome_outlined,
-    3: Icons.local_fire_department_outlined,
-    7: Icons.whatshot_rounded,
-    14: Icons.whatshot_rounded,
-    30: Icons.bolt_rounded,
-    60: Icons.rocket_launch_rounded,
-    90: Icons.diamond_rounded,
-    180: Icons.electric_bolt_rounded,
-    365: Icons.workspace_premium_rounded,
+    0: PhosphorIconsDuotone.drop,
+    1: PhosphorIconsDuotone.sparkle,
+    3: PhosphorIconsDuotone.fire,
+    7: PhosphorIconsDuotone.flame,
+    14: PhosphorIconsDuotone.shieldCheck,
+    30: PhosphorIconsDuotone.lightning,
+    60: PhosphorIconsDuotone.rocketLaunch,
+    90: PhosphorIconsDuotone.diamond,
+    180: PhosphorIconsDuotone.star,
+    365: PhosphorIconsDuotone.crown,
   };
 
   // ─── Achievement Definitions ───
@@ -59,63 +60,63 @@ class AppConstants {
       'title': 'First Day',
       'description': 'Complete your first day',
       'days': 1,
-      'icon': Icons.eco_rounded,
+      'icon': PhosphorIconsDuotone.plant,
     },
     {
       'id': 'three_days',
       'title': '3 Day Starter',
       'description': 'Reach a 3-day streak',
       'days': 3,
-      'icon': Icons.park_rounded,
+      'icon': PhosphorIconsDuotone.tree,
     },
     {
       'id': 'one_week',
       'title': '7 Day Warrior',
       'description': 'Survive an entire week',
       'days': 7,
-      'icon': Icons.shield_rounded,
+      'icon': PhosphorIconsDuotone.shield,
     },
     {
       'id': 'two_weeks',
       'title': '14 Day Fighter',
       'description': 'Two weeks of discipline',
       'days': 14,
-      'icon': Icons.verified_user_rounded,
+      'icon': PhosphorIconsDuotone.shieldCheck,
     },
     {
       'id': 'one_month',
       'title': '30 Day Master',
       'description': 'A full month of control',
       'days': 30,
-      'icon': Icons.emoji_events_rounded,
+      'icon': PhosphorIconsDuotone.medal,
     },
     {
       'id': 'sixty_days',
       'title': '60 Day Veteran',
       'description': 'Two months strong',
       'days': 60,
-      'icon': Icons.diamond_rounded,
+      'icon': PhosphorIconsDuotone.diamond,
     },
     {
       'id': 'ninety_days',
       'title': '90 Day Legend',
       'description': 'The ultimate milestone',
       'days': 90,
-      'icon': Icons.military_tech_rounded,
+      'icon': PhosphorIconsDuotone.trophy,
     },
     {
       'id': 'half_year',
       'title': '180 Day Titan',
       'description': 'Half a year of strength',
       'days': 180,
-      'icon': Icons.stars_rounded,
+      'icon': PhosphorIconsDuotone.star,
     },
     {
       'id': 'one_year',
       'title': '365 Day Immortal',
       'description': 'A full year. Unstoppable.',
       'days': 365,
-      'icon': Icons.workspace_premium_rounded,
+      'icon': PhosphorIconsDuotone.crown,
     },
   ];
 

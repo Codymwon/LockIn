@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/core/utils/date_utils.dart';
 import 'package:lock_in/services/storage_service.dart';
@@ -21,7 +22,7 @@ class StreakState {
     this.relapseCount = 0,
     this.streakStartDate,
     this.rank = 'Recruit',
-    this.progressIcon = Icons.water_drop_outlined,
+    this.progressIcon = PhosphorIconsDuotone.drop,
   });
 
   StreakState copyWith({
@@ -124,7 +125,7 @@ class StreakNotifier extends Notifier<StreakState> {
   }
 
   IconData _getProgressIcon(int days) {
-    IconData icon = Icons.water_drop_outlined;
+    IconData icon = PhosphorIconsDuotone.drop;
     for (final entry in AppConstants.progressIcons.entries) {
       if (days >= entry.key) icon = entry.value;
     }

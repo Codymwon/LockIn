@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/core/utils/date_utils.dart';
 import 'package:lock_in/features/journal/presentation/providers/journal_provider.dart';
@@ -32,7 +33,10 @@ class JournalScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
+                      icon: const Icon(
+                        PhosphorIconsDuotone.caretLeft,
+                        size: 24,
+                      ),
                       onPressed: () => Navigator.of(context).pop(),
                       color: AppColors.textSecondary,
                     ),
@@ -74,7 +78,7 @@ class JournalScreen extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: const Icon(
-                                  Icons.delete_rounded,
+                                  PhosphorIconsDuotone.trash,
                                   color: AppColors.warning,
                                 ),
                               ),
@@ -92,7 +96,7 @@ class JournalScreen extends ConsumerWidget {
                                     Row(
                                       children: [
                                         Icon(
-                                          Icons.article_rounded,
+                                          PhosphorIconsDuotone.fileText,
                                           size: 16,
                                           color: AppColors.accent,
                                         ),
@@ -148,7 +152,7 @@ class JournalScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEntrySheet(context, ref),
         backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add_rounded, color: Colors.white),
+        child: const Icon(PhosphorIconsDuotone.plus, color: Colors.white),
       ),
     );
   }
@@ -240,7 +244,7 @@ class JournalScreen extends ConsumerWidget {
                       }
                     },
                     height: 52,
-                    icon: Icons.check_rounded,
+                    icon: PhosphorIconsDuotone.check,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -268,7 +272,7 @@ class _EmptyState extends StatelessWidget {
               color: AppColors.primary.withValues(alpha: 0.1),
             ),
             child: const Icon(
-              Icons.menu_book_rounded,
+              PhosphorIconsDuotone.bookOpenText,
               size: 36,
               color: AppColors.accent,
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
 import 'package:lock_in/shared/widgets/glow_button.dart';
@@ -27,7 +28,7 @@ class ResetDialog extends StatelessWidget {
                 color: AppColors.warning.withValues(alpha: 0.15),
               ),
               child: const Icon(
-                Icons.restart_alt_rounded,
+                PhosphorIconsDuotone.arrowClockwise,
                 size: 32,
                 color: AppColors.warning,
               ),
@@ -82,7 +83,7 @@ class ResetDialog extends StatelessWidget {
         content: Row(
           children: [
             const Icon(
-              Icons.fitness_center_rounded,
+              PhosphorIconsDuotone.barbell,
               color: Colors.white,
               size: 18,
             ),

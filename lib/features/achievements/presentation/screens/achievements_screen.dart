@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/features/achievements/presentation/providers/achievements_provider.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
@@ -52,7 +53,7 @@ class AchievementsScreen extends ConsumerWidget {
                         ),
                         child: const Center(
                           child: Icon(
-                            Icons.bolt_rounded,
+                            PhosphorIconsDuotone.lightning,
                             size: 28,
                             color: Colors.white,
                           ),
@@ -154,7 +155,9 @@ class _AchievementCard extends StatelessWidget {
               ),
               child: Center(
                 child: Icon(
-                  achievement.unlocked ? achievement.icon : Icons.lock_rounded,
+                  achievement.unlocked
+                      ? achievement.icon
+                      : PhosphorIconsDuotone.lockKey,
                   size: 22,
                   color: achievement.unlocked
                       ? AppColors.accent

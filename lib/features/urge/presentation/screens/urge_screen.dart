@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
@@ -126,7 +127,10 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
+                      icon: const Icon(
+                        PhosphorIconsDuotone.caretLeft,
+                        size: 24,
+                      ),
                       onPressed: () {
                         if (_isActive) _stopBreathing();
                         Navigator.of(context).pop();
@@ -151,7 +155,7 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
                 if (!_isActive) ...[
                   // Motivation message
                   const Icon(
-                    Icons.shield_rounded,
+                    PhosphorIconsDuotone.shieldCheck,
                     size: 56,
                     color: AppColors.accent,
                   ),
@@ -171,7 +175,7 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
                     onPressed: _startBreathing,
                     width: 220,
                     height: 56,
-                    icon: Icons.air_rounded,
+                    icon: PhosphorIconsDuotone.wind,
                   ),
                 ] else ...[
                   // Breathing animation
@@ -254,7 +258,7 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
                     textColor: AppColors.background,
                     width: 200,
                     height: 52,
-                    icon: Icons.check_rounded,
+                    icon: PhosphorIconsDuotone.check,
                   ),
                 ],
                 const Spacer(),
