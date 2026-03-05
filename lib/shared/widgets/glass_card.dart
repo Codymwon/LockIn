@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lock_in/core/theme/app_theme.dart';
 
 /// A glassmorphism-styled card with optional blur, transparency, and a subtle border.
 /// By default blur is OFF for performance. Enable with [useBlur] when content
@@ -25,13 +24,17 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final decoration = BoxDecoration(
-      color: AppColors.surface.withValues(alpha: 0.6),
+      color: cs.surface.withValues(alpha: 0.6),
       borderRadius: BorderRadius.circular(borderRadius),
-      border: Border.all(color: borderColor ?? AppColors.cardBorder, width: 1),
+      border: Border.all(
+        color: borderColor ?? cs.primary.withValues(alpha: 0.2),
+        width: 1,
+      ),
       boxShadow: [
         BoxShadow(
-          color: AppColors.primary.withValues(alpha: 0.05),
+          color: cs.primary.withValues(alpha: 0.05),
           blurRadius: 20,
           spreadRadius: 0,
         ),

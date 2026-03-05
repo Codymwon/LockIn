@@ -55,6 +55,10 @@ class _GlowButtonState extends State<GlowButton>
   @override
   Widget build(BuildContext context) {
     final color = widget.color ?? AppColors.primary;
+    final isAmoled =
+        Theme.of(context).scaffoldBackgroundColor == const Color(0xFF000000);
+    final glowAlpha1 = isAmoled ? 0.15 : 0.4;
+    final glowAlpha2 = isAmoled ? 0.08 : 0.2;
 
     return AnimatedBuilder(
       animation: _scaleAnim,
@@ -80,13 +84,13 @@ class _GlowButtonState extends State<GlowButton>
             borderRadius: BorderRadius.circular(widget.borderRadius),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(alpha: 0.4),
+                color: color.withValues(alpha: glowAlpha1),
                 blurRadius: 20,
                 spreadRadius: 0,
                 offset: const Offset(0, 4),
               ),
               BoxShadow(
-                color: color.withValues(alpha: 0.2),
+                color: color.withValues(alpha: glowAlpha2),
                 blurRadius: 40,
                 spreadRadius: 0,
               ),

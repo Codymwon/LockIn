@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
+import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/features/achievements/presentation/providers/achievements_provider.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
 
@@ -11,14 +12,15 @@ class AchievementsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(achievementsProvider);
+    final c = AppColorScheme.of(ref.watch(themeProvider));
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.background, Color(0xFF12082A)],
+            colors: [c.background, c.gradientMid],
           ),
         ),
         child: SafeArea(

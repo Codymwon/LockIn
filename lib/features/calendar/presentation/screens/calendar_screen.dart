@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
+import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/features/calendar/presentation/providers/calendar_provider.dart';
 
 class CalendarScreen extends ConsumerWidget {
@@ -11,14 +12,15 @@ class CalendarScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final calendarState = ref.watch(calendarProvider);
     final statuses = calendarState.dayStatuses;
+    final c = AppColorScheme.of(ref.watch(themeProvider));
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.background, Color(0xFF12082A)],
+            colors: [c.background, c.gradientMid],
           ),
         ),
         child: SafeArea(

@@ -13,6 +13,7 @@ class StorageService {
   static const _totalDaysKey = 'total_clean_days';
   static const _relapseCountKey = 'relapse_count';
   static const _lastCheckInKey = 'last_check_in';
+  static const _amoledThemeKey = 'amoled_theme';
 
   /// Initialize Hive and SharedPreferences.
   static Future<void> init() async {
@@ -93,5 +94,27 @@ class StorageService {
 
   static List<Map<dynamic, dynamic>> getJournalEntries() {
     return _journalBox.values.toList();
+  }
+
+  // ─── Reset All Data ───
+
+  /// Clears all streak, stats, urges, and journal data.
+  /// Preserves user preferences (e.g. AMOLED theme).
+  static Future<void> resetAllData() async {
+    await _prefs.remove(_streakStartKey);
+    await _prefs.remove(_longestStreakKey);
+    await _prefs.remove(_totalDaysKey);
+    await _prefs.remove(_relapseCountKey);
+    await _prefs.remove(_lastCheckInKey);
+    await _urgeBox.clear();
+    await _journalBox.clear();
+  }
+
+  // ─── Theme ───
+
+  static bool getAmoledTheme() => _prefs.getBool(_amoledThemeKey) ?? false;
+
+  static Future<void> setAmoledTheme(bool enabled) async {
+    await _prefs.setBool(_amoledThemeKey, enabled);
   }
 }

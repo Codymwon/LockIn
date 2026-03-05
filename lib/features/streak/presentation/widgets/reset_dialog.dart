@@ -17,6 +17,7 @@ class ResetDialog extends StatelessWidget {
       child: GlassCard(
         padding: const EdgeInsets.all(28),
         borderRadius: 24,
+        useBlur: true,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -88,11 +89,13 @@ class ResetDialog extends StatelessWidget {
               size: 18,
             ),
             const SizedBox(width: 8),
-            const Text(
-              'Your journey continues. Start again today.',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
+            Expanded(
+              child: const Text(
+                'Your journey continues. Start again today.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],

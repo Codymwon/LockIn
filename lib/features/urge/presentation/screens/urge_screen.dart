@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
+import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
 import 'package:lock_in/shared/widgets/glow_button.dart';
 
@@ -108,13 +109,15 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final c = AppColorScheme.of(ref.watch(themeProvider));
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF150D2E), AppColors.background],
+            colors: [c.gradientMid, c.background],
           ),
         ),
         child: SafeArea(

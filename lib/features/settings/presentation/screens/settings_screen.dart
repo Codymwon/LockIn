@@ -3,8 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
+import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/core/utils/date_utils.dart';
 import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
+import 'package:lock_in/features/stats/presentation/providers/stats_provider.dart';
+import 'package:lock_in/features/achievements/presentation/providers/achievements_provider.dart';
+import 'package:lock_in/features/journal/presentation/providers/journal_provider.dart';
+import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
+import 'package:lock_in/services/storage_service.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -39,25 +45,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       initialDate: initialDate.isAfter(now) ? now : initialDate,
       firstDate: DateTime(2020),
       lastDate: now,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: AppColors.surface,
-              onSurface: AppColors.textPrimary,
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: AppColors.background,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (pickedDate == null || !mounted) return;
@@ -65,25 +52,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(initialDate),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: AppColors.surface,
-              onSurface: AppColors.textPrimary,
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: AppColors.background,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (pickedTime == null || !mounted) return;
@@ -96,16 +64,78 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       pickedTime.minute,
     );
 
-    // Don't allow future dates
     final chosen = combined.isAfter(now) ? now : combined;
-
     setState(() => _previewDate = chosen);
     await ref.read(streakProvider.notifier).updateStreakStartDate(chosen);
+  }
+
+  Future<void> _showResetConfirmation(AppColorScheme c) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: c.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(PhosphorIconsDuotone.warning, color: c.warning, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              'Reset All Data?',
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'This will permanently delete all your streak history, statistics, badges, journal entries, and urge logs.\n\nThis action cannot be undone.',
+          style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: TextStyle(color: c.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              backgroundColor: c.warning.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'Reset Everything',
+              style: TextStyle(color: c.warning, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await StorageService.resetAllData();
+      setState(() => _previewDate = null);
+
+      // Wait for the dialog exit animation to fully complete
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!mounted) return;
+      ref.invalidate(streakProvider);
+      ref.invalidate(statsProvider);
+      ref.invalidate(achievementsProvider);
+      ref.invalidate(journalProvider);
+      ref.invalidate(urgeProvider);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final streak = ref.watch(streakProvider);
+    final isAmoled = ref.watch(themeProvider);
+    final c = AppColorScheme.of(isAmoled);
     final startDate = _previewDate ?? streak.streakStartDate;
     final now = DateTime.now();
     final streakDuration = startDate != null
@@ -114,15 +144,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              AppColors.background,
-              Color(0xFF12082A),
-              AppColors.background,
-            ],
+            colors: [c.background, c.gradientMid, c.background],
           ),
         ),
         child: SafeArea(
@@ -140,7 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       child: IconButton(
                         icon: Icon(
                           PhosphorIconsDuotone.caretLeft,
-                          color: AppColors.textSecondary.withValues(alpha: 0.7),
+                          color: c.textSecondary.withValues(alpha: 0.7),
                           size: 22,
                         ),
                         onPressed: () => context.pop(),
@@ -154,7 +180,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         letterSpacing: 6,
                         fontSize: 13,
-                        color: AppColors.accent,
+                        color: c.accent,
                       ),
                     ),
                   ],
@@ -169,23 +195,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Section label
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4, bottom: 12),
-                        child: Text(
-                          'STREAK',
-                          style: TextStyle(
-                            color: AppColors.textSecondary.withValues(
-                              alpha: 0.6,
-                            ),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 2,
+                      // ─── APPEARANCE ───
+                      _SectionLabel(text: 'APPEARANCE', color: c.textSecondary),
+
+                      GlassCard(
+                        padding: const EdgeInsets.all(0),
+                        borderRadius: 16,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          child: Row(
+                            children: [
+                              _SettingIcon(
+                                color: isAmoled ? Colors.white : c.primary,
+                                icon: PhosphorIconsDuotone.moon,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'AMOLED Black',
+                                      style: TextStyle(
+                                        color: c.textPrimary,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Pure black for OLED displays',
+                                      style: TextStyle(
+                                        color: c.textSecondary.withValues(
+                                          alpha: 0.8,
+                                        ),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch.adaptive(
+                                value: isAmoled,
+                                onChanged: (_) =>
+                                    ref.read(themeProvider.notifier).toggle(),
+                                activeColor: c.primary,
+                                activeTrackColor: c.primary.withValues(
+                                  alpha: 0.3,
+                                ),
+                                inactiveThumbColor: c.textSecondary,
+                                inactiveTrackColor: c.surfaceLight.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
 
-                      // Edit streak start
+                      const SizedBox(height: 28),
+
+                      // ─── STREAK ───
+                      _SectionLabel(text: 'STREAK', color: c.textSecondary),
+
                       GlassCard(
                         padding: const EdgeInsets.all(0),
                         borderRadius: 16,
@@ -194,9 +269,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: InkWell(
                             onTap: _pickDateTime,
                             borderRadius: BorderRadius.circular(16),
-                            splashColor: AppColors.primary.withValues(
-                              alpha: 0.1,
-                            ),
+                            splashColor: c.primary.withValues(alpha: 0.1),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
@@ -204,20 +277,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      PhosphorIconsDuotone.calendarBlank,
-                                      color: AppColors.accent,
-                                      size: 20,
-                                    ),
+                                  _SettingIcon(
+                                    color: c.primary,
+                                    icon: PhosphorIconsDuotone.calendarBlank,
+                                    accentColor: c.accent,
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -225,10 +288,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
+                                        Text(
                                           'Streak Start Date',
                                           style: TextStyle(
-                                            color: AppColors.textPrimary,
+                                            color: c.textPrimary,
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -239,8 +302,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                               ? '${AppDateUtils.formatDate(startDate)}  •  ${AppDateUtils.formatTime(startDate)}'
                                               : 'Not started yet',
                                           style: TextStyle(
-                                            color: AppColors.textSecondary
-                                                .withValues(alpha: 0.8),
+                                            color: c.textSecondary.withValues(
+                                              alpha: 0.8,
+                                            ),
                                             fontSize: 13,
                                           ),
                                         ),
@@ -249,7 +313,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ),
                                   Icon(
                                     PhosphorIconsDuotone.pencilSimple,
-                                    color: AppColors.textSecondary.withValues(
+                                    color: c.textSecondary.withValues(
                                       alpha: 0.5,
                                     ),
                                     size: 18,
@@ -261,7 +325,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
 
-                      // Streak preview
                       if (startDate != null) ...[
                         const SizedBox(height: 16),
                         GlassCard(
@@ -272,30 +335,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           borderRadius: 16,
                           child: Row(
                             children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppColors.success.withValues(
-                                    alpha: 0.15,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  PhosphorIconsDuotone.timer,
-                                  color: AppColors.success,
-                                  size: 20,
-                                ),
+                              _SettingIcon(
+                                color: c.success,
+                                icon: PhosphorIconsDuotone.timer,
                               ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Current Streak',
                                       style: TextStyle(
-                                        color: AppColors.textPrimary,
+                                        color: c.textPrimary,
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -303,8 +355,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     const SizedBox(height: 4),
                                     Text(
                                       _formatDuration(streakDuration),
-                                      style: const TextStyle(
-                                        color: AppColors.success,
+                                      style: TextStyle(
+                                        color: c.success,
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -317,6 +369,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ],
 
+                      const SizedBox(height: 28),
+
+                      // ─── DANGER ZONE ───
+                      _SectionLabel(text: 'DANGER ZONE', color: c.warning),
+
+                      GlassCard(
+                        padding: const EdgeInsets.all(0),
+                        borderRadius: 16,
+                        borderColor: c.warning.withValues(alpha: 0.2),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _showResetConfirmation(c),
+                            borderRadius: BorderRadius.circular(16),
+                            splashColor: c.warning.withValues(alpha: 0.1),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 18,
+                              ),
+                              child: Row(
+                                children: [
+                                  _SettingIcon(
+                                    color: c.warning,
+                                    icon: PhosphorIconsDuotone.trash,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Reset All Data',
+                                          style: TextStyle(
+                                            color: c.warning,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Delete all stats, badges, journals & urges',
+                                          style: TextStyle(
+                                            color: c.textSecondary.withValues(
+                                              alpha: 0.8,
+                                            ),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    PhosphorIconsDuotone.caretRight,
+                                    color: c.warning.withValues(alpha: 0.5),
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -326,6 +443,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─── Reusable Settings Widgets ───
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  final Color color;
+
+  const _SectionLabel({required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color.withValues(alpha: 0.6),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2,
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingIcon extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final Color? accentColor;
+
+  const _SettingIcon({
+    required this.color,
+    required this.icon,
+    this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, color: accentColor ?? color, size: 20),
     );
   }
 }

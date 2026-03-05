@@ -19,12 +19,10 @@ class AppDateUtils {
   }
 
   /// Calculates the current streak given a [startDate].
+  /// Based on full 24-hour periods elapsed (not calendar days).
   /// Returns 0 if startDate is in the future.
   static int calculateStreak(DateTime startDate) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final start = DateTime(startDate.year, startDate.month, startDate.day);
-    final diff = today.difference(start).inDays;
+    final diff = DateTime.now().difference(startDate).inDays;
     return diff < 0 ? 0 : diff;
   }
 
