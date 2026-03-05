@@ -50,7 +50,28 @@ class MoodStreakGraph extends ConsumerWidget {
     // Filter journal entries for the current streak and only those with a mood
     final streakStartDate = streak.streakStartDate;
     if (streakStartDate == null) {
-      return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Mood vs Streak Length',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start a streak and log your mood in the journal to see how it affects your happiness over time.',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              height: 1.5,
+            ),
+          ),
+        ],
+      );
     }
 
     final currentStreakEntries = journal.entries.where((entry) {
@@ -82,7 +103,28 @@ class MoodStreakGraph extends ConsumerWidget {
     }
 
     if (spots.isEmpty) {
-      return const SizedBox.shrink(); // Hide graph if no mood data for the streak
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Mood vs Streak Length',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Log your mood in the journal during this streak to see how it affects your happiness over time.',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              height: 1.5,
+            ),
+          ),
+        ],
+      );
     }
 
     double minX = spots.first.x;

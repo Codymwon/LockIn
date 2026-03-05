@@ -257,39 +257,59 @@ class StatsScreen extends ConsumerWidget {
                 // Resets info
                 GlassCard(
                   padding: const EdgeInsets.all(20),
-                  child: Row(
+                  child: Column(
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          PhosphorIconsDuotone.arrowCounterClockwise,
-                          color: AppColors.warning,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${stats.relapseCount} Resets',
-                              style: Theme.of(context).textTheme.titleMedium,
+                      Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Every reset is a new beginning',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: AppColors.textSecondary),
+                            child: const Icon(
+                              PhosphorIconsDuotone.arrowCounterClockwise,
+                              color: AppColors.warning,
+                              size: 22,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${stats.relapseCount} Resets',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  stats.topTrigger != null
+                                      ? '${stats.topTriggerPercentage!.toStringAsFixed(0)}% of your resets are caused by ${stats.topTrigger}.'
+                                      : 'Every reset is a new beginning',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
+                      if (stats.triggerCounts.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: 140,
+                          child: _TriggerPieChart(
+                            triggerCounts: stats.triggerCounts,
+                            totalTriggers: stats.validTriggers,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -519,5 +539,109 @@ class _UrgeHeatmapChart extends StatelessWidget {
       default:
         return '';
     }
+  }
+}
+
+class _TriggerPieChart extends StatelessWidget {
+  final Map<String, int> triggerCounts;
+  final int totalTriggers;
+
+  const _TriggerPieChart({
+    required this.triggerCounts,
+    required this.totalTriggers,
+  });
+
+  Color _getColorForTrigger(int index) {
+    final colors = [
+      AppColors.primary,
+      AppColors.accent,
+      AppColors.warning,
+      AppColors.success,
+      const Color(0xFFEF5350), // Red
+      const Color(0xFFAB47BC), // Purple
+      const Color(0xFF26C6DA), // Cyan
+    ];
+    return colors[index % colors.length];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = triggerCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return Row(
+      children: [
+        Expanded(
+          flex: 5,
+          child: PieChart(
+            PieChartData(
+              sectionsSpace: 2,
+              centerSpaceRadius: 25,
+              sections: List.generate(entries.length, (i) {
+                final entry = entries[i];
+                final percentage = (entry.value / totalTriggers) * 100;
+
+                return PieChartSectionData(
+                  color: _getColorForTrigger(i),
+                  value: entry.value.toDouble(),
+                  title: '${percentage.toInt()}%',
+                  radius: 30.0,
+                  titleStyle: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          flex: 6,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: entries.map((entry) {
+              final i = entries.indexOf(entry);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6.0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: _getColorForTrigger(i),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        entry.key,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '${entry.value}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
   }
 }

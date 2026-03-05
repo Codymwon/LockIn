@@ -6,6 +6,7 @@ class StorageService {
   static late SharedPreferences _prefs;
   static late Box<Map> _urgeBox;
   static late Box<Map> _journalBox;
+  static late Box<Map> _resetsBox;
 
   // ─── Keys ───
   static const _streakStartKey = 'streak_start_date';
@@ -22,6 +23,7 @@ class StorageService {
     await Hive.initFlutter();
     _urgeBox = await Hive.openBox<Map>('urge_events');
     _journalBox = await Hive.openBox<Map>('journal_entries');
+    _resetsBox = await Hive.openBox<Map>('reset_events');
     _prefs = await SharedPreferences.getInstance();
   }
 
@@ -112,6 +114,18 @@ class StorageService {
     return _journalBox.values.toList();
   }
 
+  // ─── Reset Events (Relapse Autopsy) ───
+
+  static Box<Map> get resetsBox => _resetsBox;
+
+  static Future<void> addResetEvent(Map<String, dynamic> event) async {
+    await _resetsBox.add(event);
+  }
+
+  static List<Map<dynamic, dynamic>> getResetEvents() {
+    return _resetsBox.values.toList();
+  }
+
   // ─── Reset All Data ───
 
   /// Clears all streak, stats, urges, and journal data.
@@ -124,6 +138,7 @@ class StorageService {
     await _prefs.remove(_lastCheckInKey);
     await _urgeBox.clear();
     await _journalBox.clear();
+    await _resetsBox.clear();
   }
 
   // ─── App Preferences / Tips ───

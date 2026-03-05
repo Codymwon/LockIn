@@ -646,7 +646,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Delete all stats, badges, journals & urges',
+                                          'Delete all stats, badges, journals and urges',
                                           style: TextStyle(
                                             color: c.textSecondary.withValues(
                                               alpha: 0.8,

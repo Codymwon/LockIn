@@ -93,9 +93,22 @@ class StreakNotifier extends Notifier<StreakState> {
   }
 
   /// Reset the streak (relapse).
-  Future<void> resetStreak() async {
+  Future<void> resetStreak({String? trigger}) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+
+    if (trigger != null) {
+      await StorageService.addResetEvent({
+        'timestamp': now.millisecondsSinceEpoch,
+        'trigger': trigger,
+        'type': 'reset',
+      });
+      await StorageService.addJournalEntry({
+        'text': 'Streak reset due to: $trigger. Notes: ',
+        'timestamp': now.millisecondsSinceEpoch,
+        'mood': '🙁',
+      });
+    }
 
     // Save current streak as total clean days
     final newTotal = state.totalCleanDays + state.currentStreak;
@@ -112,11 +125,24 @@ class StreakNotifier extends Notifier<StreakState> {
   }
 
   /// Slip the streak (deduct penalty days instead of a full reset).
-  Future<void> slipStreak(int penaltyDays) async {
+  Future<void> slipStreak(int penaltyDays, {String? trigger}) async {
     if (state.streakStartDate == null) return;
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+
+    if (trigger != null) {
+      await StorageService.addResetEvent({
+        'timestamp': now.millisecondsSinceEpoch,
+        'trigger': trigger,
+        'type': 'slip',
+      });
+      await StorageService.addJournalEntry({
+        'text': 'Streak slip ($penaltyDays days) due to: $trigger. Notes: ',
+        'timestamp': now.millisecondsSinceEpoch,
+        'mood': '🙁',
+      });
+    }
 
     // Shift start date forward by penaltyDays to simulate deducting days
     DateTime newStartDate = state.streakStartDate!.add(

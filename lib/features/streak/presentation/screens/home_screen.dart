@@ -127,21 +127,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             showDialog(
                               context: context,
                               builder: (_) => ResetDialog(
-                                onReset: () {
+                                onReset: (trigger) {
                                   ref
                                       .read(streakProvider.notifier)
-                                      .resetStreak();
+                                      .resetStreak(trigger: trigger);
                                   setState(() {
                                     _quote = _randomQuote();
                                   });
                                 },
-                                onSlip: () {
+                                onSlip: (trigger) {
                                   final penalty = ref
                                       .read(streakSettingsProvider)
                                       .slipPenaltyDays;
                                   ref
                                       .read(streakProvider.notifier)
-                                      .slipStreak(penalty);
+                                      .slipStreak(penalty, trigger: trigger);
                                   setState(() {
                                     _quote = _randomQuote();
                                   });
