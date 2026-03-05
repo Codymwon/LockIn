@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
@@ -30,6 +31,7 @@ class _StreakRingState extends State<StreakRing>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnim;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -40,6 +42,12 @@ class _StreakRingState extends State<StreakRing>
     );
     _updateAnimation();
     _controller.forward();
+    // Tick every second to update the live h:m:s display
+    if (widget.streakStartDate != null) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    }
   }
 
   @override
@@ -48,6 +56,15 @@ class _StreakRingState extends State<StreakRing>
     if (oldWidget.currentStreak != widget.currentStreak) {
       _updateAnimation();
       _controller.forward(from: 0);
+    }
+    // Start/stop timer when streak state changes
+    if (widget.streakStartDate != null && _timer == null) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    } else if (widget.streakStartDate == null && _timer != null) {
+      _timer?.cancel();
+      _timer = null;
     }
   }
 
@@ -61,6 +78,7 @@ class _StreakRingState extends State<StreakRing>
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
     super.dispose();
   }

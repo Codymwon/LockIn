@@ -6,6 +6,7 @@ import 'package:lock_in/features/stats/presentation/screens/stats_screen.dart';
 import 'package:lock_in/features/achievements/presentation/screens/achievements_screen.dart';
 import 'package:lock_in/features/urge/presentation/screens/urge_screen.dart';
 import 'package:lock_in/features/journal/presentation/screens/journal_screen.dart';
+import 'package:lock_in/features/settings/presentation/screens/settings_screen.dart';
 import 'package:lock_in/shared/widgets/app_bottom_nav.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -57,6 +58,11 @@ final appRouter = GoRouter(
       path: '/journal',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const JournalScreen(),
+    ),
+    GoRoute(
+      path: '/settings',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SettingsScreen(),
     ),
   ],
 );

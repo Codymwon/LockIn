@@ -111,6 +111,14 @@ class StreakNotifier extends Notifier<StreakState> {
     state = _loadFromStorage();
   }
 
+  /// Update the streak start date (e.g., user backdating their streak).
+  Future<void> updateStreakStartDate(DateTime newDate) async {
+    await StorageService.setStreakStartDate(newDate);
+    final today = DateTime(newDate.year, newDate.month, newDate.day);
+    await StorageService.setLastCheckIn(today);
+    state = _loadFromStorage();
+  }
+
   /// Refresh state (e.g., on app resume to recalculate streak).
   void refresh() {
     state = _loadFromStorage();

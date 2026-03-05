@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,27 +18,13 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with TickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   late String _quote;
-  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _quote = _randomQuote();
-    // Tick every second to update the live timer display
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   String _randomQuote() {
@@ -84,6 +69,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 Stack(
                   alignment: Alignment.center,
                   children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: Icon(
+                          PhosphorIconsDuotone.gearSix,
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          size: 20,
+                        ),
+                        onPressed: () => context.push('/settings'),
+                        tooltip: 'Settings',
+                        splashRadius: 24,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ),
                     Align(
                       alignment: Alignment.center,
                       child: Text(
