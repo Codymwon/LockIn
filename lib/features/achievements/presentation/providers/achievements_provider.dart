@@ -4,6 +4,7 @@ import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
 import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
 import 'package:lock_in/features/journal/presentation/providers/journal_provider.dart';
+import 'package:lock_in/services/storage_service.dart';
 
 class Achievement {
   final String id;
@@ -73,6 +74,26 @@ class AchievementsNotifier extends Notifier<AchievementsState> {
               unlocked = streak.relapseCount >= requirement;
               label = 'comeback';
               break;
+            case 'autopsy':
+              unlocked = StorageService.getResetEvents().any(
+                (event) => event['trigger'] != null,
+              );
+              label = 'autopsy';
+              break;
+            case 'slip':
+              unlocked = StorageService.getResetEvents().any(
+                (event) => event['type'] == 'slip',
+              );
+              label = 'slip';
+              break;
+            case 'total_days':
+              unlocked = StorageService.getTotalCleanDays() >= requirement;
+              label = '$requirement days';
+              break;
+            case 'theme':
+              unlocked = StorageService.getAmoledTheme();
+              label = 'dark mode';
+              break;
           }
           break;
 
@@ -94,6 +115,14 @@ class AchievementsNotifier extends Notifier<AchievementsState> {
                 return hour >= 5 && hour < 8;
               });
               label = '5am - 8am';
+              break;
+            case 'midday':
+              // Check if any urge was logged between 12 PM and 4 PM
+              unlocked = urge.events.any((e) {
+                final hour = e.timestamp.hour;
+                return hour >= 12 && hour < 16;
+              });
+              label = '12pm - 4pm';
               break;
           }
           break;
