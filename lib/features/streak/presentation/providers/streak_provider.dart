@@ -84,7 +84,9 @@ class StreakNotifier extends Notifier<StreakState> {
   Future<void> startStreak() async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    await StorageService.setStreakStartDate(today);
+    await StorageService.setStreakStartDate(
+      now,
+    ); // Keep precise time to show realistic countdown
     await StorageService.setLastCheckIn(today);
     state = _loadFromStorage();
   }
@@ -100,7 +102,9 @@ class StreakNotifier extends Notifier<StreakState> {
     await StorageService.setRelapseCount(state.relapseCount + 1);
 
     // Start fresh
-    await StorageService.setStreakStartDate(today);
+    await StorageService.setStreakStartDate(
+      now,
+    ); // Keep precise time to show realistic countdown
     await StorageService.setLastCheckIn(today);
 
     state = _loadFromStorage();

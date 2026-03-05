@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,11 +21,25 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with TickerProviderStateMixin {
   late String _quote;
+  bool _showDetailed = true;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _quote = _randomQuote();
+    // Tick every second to update the live timer display
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_showDetailed && mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   String _randomQuote() {
@@ -66,10 +81,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
                 const SizedBox(height: 40),
 
-                // Streak ring
+                // Streak ring — tap to toggle detailed / minimal
                 StreakRing(
                   currentStreak: streak.currentStreak,
                   icon: streak.progressIcon,
+                  streakStartDate: streak.streakStartDate,
+                  showDetailed: _showDetailed,
+                  onTap: () {
+                    setState(() => _showDetailed = !_showDetailed);
+                  },
                 ),
                 const SizedBox(height: 16),
 
@@ -163,7 +183,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     children: [
                       Expanded(
                         child: GlowButton(
-                          text: 'I FEEL AN URGE',
+                          text: 'URGE',
                           onPressed: () {
                             context.push('/urge');
                           },
