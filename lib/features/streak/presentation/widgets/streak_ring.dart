@@ -135,12 +135,40 @@ class _StreakRingState extends State<StreakRing>
                     'Day ${widget.currentStreak}',
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(
                       fontWeight: FontWeight.w800,
-                      fontSize: 42,
+                      fontSize: 48,
                       height: 1.1,
+                      color: AppColors.textPrimary,
                     ),
                   ),
+                  const SizedBox(height: 8),
 
-                  // 3. "Current Streak" Label
+                  // 3. Mini Timer (Hours Mins Secs)
+                  if (widget.streakStartDate != null) ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        _MiniTimeUnit(
+                          value: hours.toString().padLeft(2, '0'),
+                          label: 'h',
+                        ),
+                        const SizedBox(width: 8),
+                        _MiniTimeUnit(
+                          value: minutes.toString().padLeft(2, '0'),
+                          label: 'm',
+                        ),
+                        const SizedBox(width: 8),
+                        _MiniTimeUnit(
+                          value: seconds.toString().padLeft(2, '0'),
+                          label: 's',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // 4. "Current Streak" Label
                   Text(
                     'Current Streak',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -148,22 +176,6 @@ class _StreakRingState extends State<StreakRing>
                       fontSize: 12,
                     ),
                   ),
-                  const SizedBox(height: 8),
-
-                  // 4. Mini Timer (Hours Mins Secs)
-                  if (widget.streakStartDate != null)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        _MiniTimeUnit(value: '$hours', label: 'h'),
-                        const SizedBox(width: 6),
-                        _MiniTimeUnit(value: '$minutes', label: 'm'),
-                        const SizedBox(width: 6),
-                        _MiniTimeUnit(value: '$seconds', label: 's'),
-                      ],
-                    ),
                 ],
               ),
             ],
@@ -191,17 +203,18 @@ class _MiniTimeUnit extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
         const SizedBox(width: 2),
         Text(
           label,
           style: TextStyle(
-            color: AppColors.textSecondary.withValues(alpha: 0.8),
-            fontSize: 11,
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            fontSize: 10,
             fontWeight: FontWeight.w500,
           ),
         ),

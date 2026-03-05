@@ -47,6 +47,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return AppConstants.quotes[random.nextInt(AppConstants.quotes.length)];
   }
 
+  int _getNextMilestone(int currentStreak) {
+    for (final achievement in AppConstants.achievements) {
+      final days = achievement['days'] as int;
+      if (days > currentStreak) {
+        return days;
+      }
+    }
+    return currentStreak + 365; // Fallback if all achievements completed
+  }
+
   @override
   Widget build(BuildContext context) {
     final streak = ref.watch(streakProvider);
@@ -128,6 +138,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   streakStartDate: streak.streakStartDate,
                 ),
                 const SizedBox(height: 12),
+
+                // Next goal
+                if (streak.streakStartDate != null) ...[
+                  Text(
+                    'Goal: ${_getNextMilestone(streak.currentStreak)} Days',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
 
                 // Rank badge
                 Container(
