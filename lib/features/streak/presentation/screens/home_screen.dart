@@ -69,17 +69,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                const SizedBox(height: 20),
-                // App title
-                Text(
-                  'LOCK IN',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    letterSpacing: 6,
-                    fontSize: 13,
-                    color: AppColors.accent,
-                  ),
+                const SizedBox(height: 8),
+                // App header
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'LOCK IN',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          letterSpacing: 6,
+                          fontSize: 13,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ),
+                    if (streak.streakStartDate != null)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          icon: Icon(
+                            PhosphorIconsDuotone.arrowCounterClockwise,
+                            color: AppColors.textSecondary.withValues(
+                              alpha: 0.5,
+                            ),
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => ResetDialog(
+                                onReset: () {
+                                  ref
+                                      .read(streakProvider.notifier)
+                                      .resetStreak();
+                                  setState(() {
+                                    _quote = _randomQuote();
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                          tooltip: 'Reset Streak',
+                          splashRadius: 24,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ),
+                  ],
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
 
                 // Streak ring (combined view)
                 StreakRing(
@@ -87,7 +127,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   icon: streak.progressIcon,
                   streakStartDate: streak.streakStartDate,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // Rank badge
                 Container(
@@ -112,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 16),
 
                 // Motivational quote
                 Padding(
@@ -127,7 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 16),
 
                 // Stats row
                 Row(
@@ -161,7 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 16),
 
                 // Action buttons
                 if (streak.streakStartDate == null) ...[
@@ -201,35 +241,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => ResetDialog(
-                          onReset: () {
-                            ref.read(streakProvider.notifier).resetStreak();
-                            setState(() {
-                              _quote = _randomQuote();
-                            });
-                          },
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      PhosphorIconsDuotone.arrowCounterClockwise,
-                      color: AppColors.warning,
-                      size: 18,
-                    ),
-                    label: const Text(
-                      'Reset Streak',
-                      style: TextStyle(
-                        color: AppColors.warning,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
                   ),
                 ],
                 const SizedBox(height: 32),
