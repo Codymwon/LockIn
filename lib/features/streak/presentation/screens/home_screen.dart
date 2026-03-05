@@ -21,7 +21,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with TickerProviderStateMixin {
   late String _quote;
-  bool _showDetailed = true;
   Timer? _timer;
 
   @override
@@ -30,7 +29,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _quote = _randomQuote();
     // Tick every second to update the live timer display
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_showDetailed && mounted) {
+      if (mounted) {
         setState(() {});
       }
     });
@@ -81,15 +80,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
                 const SizedBox(height: 40),
 
-                // Streak ring — tap to toggle detailed / minimal
+                // Streak ring (combined view)
                 StreakRing(
                   currentStreak: streak.currentStreak,
                   icon: streak.progressIcon,
                   streakStartDate: streak.streakStartDate,
-                  showDetailed: _showDetailed,
-                  onTap: () {
-                    setState(() => _showDetailed = !_showDetailed);
-                  },
                 ),
                 const SizedBox(height: 16),
 

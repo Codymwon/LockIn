@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 
 /// Animated circular progress ring for the streak display.
-/// Supports two modes:
-/// - **Detailed** (default): Shows Days, Hours, Minutes, Seconds
-/// - **Minimalist** (on tap): Shows only the Day count
+/// Shows:
+/// - Icon
+/// - Day X
+/// - Current Streak (label)
+/// - [Hours Mins Secs] (mini live timer)
 class StreakRing extends StatefulWidget {
   final int currentStreak;
   final int targetDays;
   final IconData icon;
   final DateTime? streakStartDate;
-  final bool showDetailed;
-  final VoidCallback? onTap;
 
   const StreakRing({
     super.key,
@@ -20,8 +20,6 @@ class StreakRing extends StatefulWidget {
     this.targetDays = 90,
     required this.icon,
     this.streakStartDate,
-    this.showDetailed = true,
-    this.onTap,
   });
 
   @override
@@ -74,142 +72,114 @@ class _StreakRingState extends State<StreakRing>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: AnimatedBuilder(
-        animation: _progressAnim,
-        builder: (context, child) {
-          final elapsed = _getElapsed();
+    return AnimatedBuilder(
+      animation: _progressAnim,
+      builder: (context, child) {
+        final elapsed = _getElapsed();
+        final hours = elapsed.inHours % 24;
+        final minutes = elapsed.inMinutes % 60;
+        final seconds = elapsed.inSeconds % 60;
 
-          return SizedBox(
-            width: 240,
-            height: 240,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Glow behind ring
-                Container(
-                  width: 220,
-                  height: 220,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(
-                          alpha: 0.15 + (_progressAnim.value * 0.15),
-                        ),
-                        blurRadius: 40 + (_progressAnim.value * 20),
-                        spreadRadius: 5,
+        return SizedBox(
+          width: 240,
+          height: 240,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Glow behind ring
+              Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(
+                        alpha: 0.15 + (_progressAnim.value * 0.15),
                       ),
-                    ],
+                      blurRadius: 40 + (_progressAnim.value * 20),
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+              ),
+              // Background ring
+              CustomPaint(
+                size: const Size(220, 220),
+                painter: _RingPainter(
+                  progress: 1.0,
+                  color: AppColors.surfaceLight.withValues(alpha: 0.5),
+                  strokeWidth: 8,
+                ),
+              ),
+              // Progress ring
+              CustomPaint(
+                size: const Size(220, 220),
+                painter: _RingPainter(
+                  progress: _progressAnim.value,
+                  color: AppColors.primary,
+                  strokeWidth: 8,
+                  useGradient: true,
+                ),
+              ),
+              // Center content — Combined Layout
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 1. Icon
+                  Icon(widget.icon, size: 28, color: AppColors.accent),
+                  const SizedBox(height: 8),
+
+                  // 2. Day X
+                  Text(
+                    'Day ${widget.currentStreak}',
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 42,
+                      height: 1.1,
+                    ),
                   ),
-                ),
-                // Background ring
-                CustomPaint(
-                  size: const Size(220, 220),
-                  painter: _RingPainter(
-                    progress: 1.0,
-                    color: AppColors.surfaceLight.withValues(alpha: 0.5),
-                    strokeWidth: 8,
+
+                  // 3. "Current Streak" Label
+                  Text(
+                    'Current Streak',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-                // Progress ring
-                CustomPaint(
-                  size: const Size(220, 220),
-                  painter: _RingPainter(
-                    progress: _progressAnim.value,
-                    color: AppColors.primary,
-                    strokeWidth: 8,
-                    useGradient: true,
-                  ),
-                ),
-                // Center content — toggle between detailed & minimal
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: widget.showDetailed
-                      ? _DetailedView(
-                          key: const ValueKey('detailed'),
-                          elapsed: elapsed,
-                        )
-                      : _MinimalView(
-                          key: const ValueKey('minimal'),
-                          currentStreak: widget.currentStreak,
-                          icon: widget.icon,
-                        ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+                  const SizedBox(height: 12),
 
-// ─── Detailed View ───
-// Layout:    2 Days
-//          17 Hrs  11 Mins
-//              1 Secs
-//          OF SOBRIETY
-class _DetailedView extends StatelessWidget {
-  final Duration elapsed;
-
-  const _DetailedView({super.key, required this.elapsed});
-
-  @override
-  Widget build(BuildContext context) {
-    final days = elapsed.inDays;
-    final hours = elapsed.inHours % 24;
-    final minutes = elapsed.inMinutes % 60;
-    final seconds = elapsed.inSeconds % 60;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Row 1: Days
-        _InlineUnit(value: '$days', label: 'Days', fontSize: 36),
-        const SizedBox(height: 2),
-        // Row 2: Hours + Minutes
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            _InlineUnit(value: '$hours', label: 'Hrs', fontSize: 28),
-            const SizedBox(width: 6),
-            _InlineUnit(value: '$minutes', label: 'Mins', fontSize: 28),
-          ],
-        ),
-        const SizedBox(height: 2),
-        // Row 3: Seconds
-        _InlineUnit(value: '$seconds', label: 'Secs', fontSize: 28),
-        const SizedBox(height: 6),
-        // Bottom label
-        Text(
-          'LOCKED IN',
-          style: TextStyle(
-            color: AppColors.primary,
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 4,
+                  // 4. Mini Timer (Hours Mins Secs)
+                  if (widget.streakStartDate != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        _MiniTimeUnit(value: '$hours', label: 'h'),
+                        const SizedBox(width: 6),
+                        _MiniTimeUnit(value: '$minutes', label: 'm'),
+                        const SizedBox(width: 6),
+                        _MiniTimeUnit(value: '$seconds', label: 's'),
+                      ],
+                    ),
+                ],
+              ),
+            ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
-/// Number + label inline: "2" bold large, "Days" small muted
-class _InlineUnit extends StatelessWidget {
+/// A tiny inline time unit for the live timer (e.g. "17 h")
+class _MiniTimeUnit extends StatelessWidget {
   final String value;
   final String label;
-  final double fontSize;
 
-  const _InlineUnit({
-    required this.value,
-    required this.label,
-    this.fontSize = 28,
-  });
+  const _MiniTimeUnit({required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -220,57 +190,20 @@ class _InlineUnit extends StatelessWidget {
       children: [
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: fontSize,
-            fontWeight: FontWeight.w800,
-            height: 1.1,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(width: 2),
         Text(
           label,
           style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: fontSize * 0.28,
+            color: AppColors.textSecondary.withValues(alpha: 0.8),
+            fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
-        ),
-      ],
-    );
-  }
-}
-
-// ─── Minimal View ───
-class _MinimalView extends StatelessWidget {
-  final int currentStreak;
-  final IconData icon;
-
-  const _MinimalView({
-    super.key,
-    required this.currentStreak,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 32, color: AppColors.accent),
-        const SizedBox(height: 4),
-        Text(
-          'Day $currentStreak',
-          style: Theme.of(
-            context,
-          ).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          'Current Streak',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
       ],
     );
