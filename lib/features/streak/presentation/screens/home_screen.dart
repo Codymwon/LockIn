@@ -262,24 +262,24 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlassCard(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-      borderRadius: 16,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      borderRadius: 14,
       child: Column(
         children: [
-          Icon(icon, size: 22, color: iconColor),
-          const SizedBox(height: 8),
+          Icon(icon, size: 16, color: iconColor),
+          const SizedBox(height: 6),
           Text(
             value,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontSize: 11,
+              fontSize: 9,
               color: AppColors.textSecondary,
             ),
           ),

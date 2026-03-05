@@ -186,12 +186,12 @@ class _DetailedView extends StatelessWidget {
         const SizedBox(height: 6),
         // Bottom label
         Text(
-          'OF SOBRIETY',
+          'LOCKED IN',
           style: TextStyle(
-            color: AppColors.accent,
+            color: AppColors.primary,
             fontSize: 10,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 3,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 4,
           ),
         ),
       ],
@@ -232,7 +232,7 @@ class _InlineUnit extends StatelessWidget {
           label,
           style: TextStyle(
             color: AppColors.textSecondary,
-            fontSize: fontSize * 0.38,
+            fontSize: fontSize * 0.28,
             fontWeight: FontWeight.w500,
           ),
         ),
