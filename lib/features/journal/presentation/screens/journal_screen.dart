@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
@@ -124,6 +123,15 @@ class JournalScreen extends ConsumerWidget {
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
+                                        if (entry.mood != null) ...[
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            entry.mood!,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
                                         const Spacer(),
                                         Text(
                                           AppDateUtils.formatTime(
@@ -172,6 +180,7 @@ class JournalScreen extends ConsumerWidget {
 
   void _showAddEntrySheet(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
+    String? selectedMood;
 
     showModalBottomSheet(
       context: context,
@@ -193,113 +202,157 @@ class JournalScreen extends ConsumerWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.textSecondary.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(2),
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.textSecondary.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'How are you feeling?',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  maxLines: 5,
-                  autofocus: true,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    height: 1.5,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Write your reflection...',
-                    hintStyle: TextStyle(
-                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    const SizedBox(height: 20),
+                    Text(
+                      'How are you feeling?',
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                    filled: true,
-                    fillColor: AppColors.background.withValues(alpha: 0.5),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.cardBorder),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: controller,
+                      maxLines: 5,
+                      autofocus: true,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                        height: 1.5,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Write your reflection...',
+                        hintStyle: TextStyle(
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.background.withValues(alpha: 0.5),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: AppColors.cardBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: AppColors.cardBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.cardBorder),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.primary),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: GlowButton(
-                    text: 'SAVE ENTRY',
-                    onPressed: () {
-                      if (controller.text.trim().isNotEmpty) {
-                        final currentEntries = ref
-                            .read(journalProvider)
-                            .entries
-                            .length;
-                        ref
-                            .read(journalProvider.notifier)
-                            .addEntry(controller.text.trim());
-                        Navigator.of(context).pop();
-
-                        if (currentEntries == 0 &&
-                            !StorageService.getHasShownJournalDeleteTip()) {
-                          StorageService.setHasShownJournalDeleteTip(true);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                children: [
-                                  Icon(
-                                    PhosphorIconsDuotone.lightbulb,
-                                    color: AppColors.primary,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Expanded(
-                                    child: Text(
-                                      'Tip: Swipe left on a journal entry to delete it.',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: ['😡', '🙁', '😐', '🙂', '🤩'].map((emoji) {
+                        final isSelected = selectedMood == emoji;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedMood = emoji;
+                            });
+                            ref.read(hapticsProvider.notifier).lightImpact();
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary.withValues(alpha: 0.2)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.transparent,
+                                width: 2,
                               ),
-                              backgroundColor: AppColors.surfaceLight,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              margin: const EdgeInsets.all(16),
-                              duration: const Duration(seconds: 4),
                             ),
-                          );
-                        }
-                      }
-                    },
-                    height: 52,
-                    icon: PhosphorIconsDuotone.check,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
+                            child: Text(
+                              emoji,
+                              style: TextStyle(fontSize: isSelected ? 32 : 28),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: GlowButton(
+                        text: 'SAVE ENTRY',
+                        onPressed: () {
+                          if (controller.text.trim().isNotEmpty) {
+                            final currentEntries = ref
+                                .read(journalProvider)
+                                .entries
+                                .length;
+                            ref
+                                .read(journalProvider.notifier)
+                                .addEntry(
+                                  controller.text.trim(),
+                                  mood: selectedMood,
+                                );
+                            Navigator.of(context).pop();
+
+                            if (currentEntries == 0 &&
+                                !StorageService.getHasShownJournalDeleteTip()) {
+                              StorageService.setHasShownJournalDeleteTip(true);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      Icon(
+                                        PhosphorIconsDuotone.lightbulb,
+                                        color: AppColors.primary,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Expanded(
+                                        child: Text(
+                                          'Tip: Swipe left on a journal entry to delete it.',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  backgroundColor: AppColors.surfaceLight,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  margin: const EdgeInsets.all(16),
+                                  duration: const Duration(seconds: 4),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        height: 52,
+                        icon: PhosphorIconsDuotone.check,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                );
+              },
             ),
           ),
         );

@@ -5,11 +5,13 @@ class JournalEntry {
   final int index;
   final String text;
   final DateTime timestamp;
+  final String? mood;
 
   const JournalEntry({
     required this.index,
     required this.text,
     required this.timestamp,
+    this.mood,
   });
 }
 
@@ -35,6 +37,7 @@ class JournalNotifier extends Notifier<JournalState> {
           index: i,
           text: e['text'] as String? ?? '',
           timestamp: DateTime.fromMillisecondsSinceEpoch(e['timestamp'] as int),
+          mood: e['mood'] as String?,
         ),
       );
     }
@@ -42,19 +45,21 @@ class JournalNotifier extends Notifier<JournalState> {
     return JournalState(entries: entries);
   }
 
-  Future<void> addEntry(String text) async {
+  Future<void> addEntry(String text, {String? mood}) async {
     await StorageService.addJournalEntry({
       'text': text,
       'timestamp': DateTime.now().millisecondsSinceEpoch,
+      if (mood != null) 'mood': mood,
     });
     state = _loadEntries();
   }
 
-  Future<void> updateEntry(int index, String text) async {
+  Future<void> updateEntry(int index, String text, {String? mood}) async {
     final entry = StorageService.getJournalEntries()[index];
     await StorageService.updateJournalEntry(index, {
       'text': text,
       'timestamp': entry['timestamp'],
+      'mood': mood ?? entry['mood'],
     });
     state = _loadEntries();
   }

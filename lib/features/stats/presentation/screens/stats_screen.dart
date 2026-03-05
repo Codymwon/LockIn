@@ -8,6 +8,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:lock_in/features/stats/presentation/providers/stats_provider.dart';
 import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
+import 'package:lock_in/features/stats/presentation/widgets/mood_streak_graph.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -243,6 +244,13 @@ class StatsScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 16),
+
+                // ─── Mood vs Streak Graph ───
+                GlassCard(
+                  padding: const EdgeInsets.all(20),
+                  child: const MoodStreakGraph(),
                 ),
                 const SizedBox(height: 16),
 
