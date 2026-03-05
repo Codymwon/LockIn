@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
 import 'package:lock_in/shared/widgets/glow_button.dart';
+import 'package:lock_in/features/settings/presentation/providers/streak_settings_provider.dart';
 
 /// Glassmorphic dialog for streak reset with encouraging language.
-class ResetDialog extends StatelessWidget {
+class ResetDialog extends ConsumerWidget {
   final VoidCallback onReset;
+  final VoidCallback onSlip;
 
-  const ResetDialog({super.key, required this.onReset});
+  const ResetDialog({super.key, required this.onReset, required this.onSlip});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final streakSettings = ref.watch(streakSettingsProvider);
+    final isStrict = streakSettings.isStrictMode;
+    final penalty = streakSettings.slipPenaltyDays;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: GlassCard(
@@ -50,20 +57,52 @@ class ResetDialog extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            GlowButton(
-              text: 'I slipped',
-              onPressed: () {
-                onReset();
-                Navigator.of(context).pop();
-                _showEncouragement(context);
-              },
-              color: AppColors.warning,
-              width: double.infinity,
-            ),
+            if (isStrict) ...[
+              GlowButton(
+                text: 'I Relapsed (Reset to 0)',
+                onPressed: () {
+                  onReset();
+                  Navigator.of(context).pop();
+                  _showEncouragement(context);
+                },
+                color: AppColors.warning,
+                width: double.infinity,
+              ),
+            ] else ...[
+              GlowButton(
+                text: 'I Slipped (-$penalty Day${penalty == 1 ? '' : 's'})',
+                onPressed: () {
+                  onSlip();
+                  Navigator.of(context).pop();
+                  _showEncouragement(
+                    context,
+                    text: 'Dust yourself off. Keep going.',
+                  );
+                },
+                color: AppColors.warning,
+                width: double.infinity,
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () {
+                  onReset();
+                  Navigator.of(context).pop();
+                  _showEncouragement(context);
+                },
+                child: const Text(
+                  'Total Relapse (Reset to 0)',
+                  style: TextStyle(
+                    color: AppColors.warning,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
+              child: const Text(
                 'Cancel',
                 style: TextStyle(
                   color: AppColors.textSecondary,
@@ -78,7 +117,10 @@ class ResetDialog extends StatelessWidget {
     );
   }
 
-  void _showEncouragement(BuildContext context) {
+  void _showEncouragement(
+    BuildContext context, {
+    String text = 'Your journey continues. Start again today.',
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -90,9 +132,9 @@ class ResetDialog extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: const Text(
-                'Your journey continues. Start again today.',
-                style: TextStyle(
+              child: Text(
+                text,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),

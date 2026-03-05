@@ -14,6 +14,8 @@ class StorageService {
   static const _relapseCountKey = 'relapse_count';
   static const _lastCheckInKey = 'last_check_in';
   static const _amoledThemeKey = 'amoled_theme';
+  static const _strictModeKey = 'strict_mode';
+  static const _slipPenaltyDaysKey = 'slip_penalty_days';
 
   /// Initialize Hive and SharedPreferences.
   static Future<void> init() async {
@@ -59,6 +61,20 @@ class StorageService {
 
   static Future<void> setLastCheckIn(DateTime date) async {
     await _prefs.setInt(_lastCheckInKey, date.millisecondsSinceEpoch);
+  }
+
+  // ─── Streak Settings ───
+
+  static bool getStrictMode() => _prefs.getBool(_strictModeKey) ?? true;
+
+  static Future<void> setStrictMode(bool enabled) async {
+    await _prefs.setBool(_strictModeKey, enabled);
+  }
+
+  static int getSlipPenaltyDays() => _prefs.getInt(_slipPenaltyDaysKey) ?? 1;
+
+  static Future<void> setSlipPenaltyDays(int days) async {
+    await _prefs.setInt(_slipPenaltyDaysKey, days);
   }
 
   // ─── Urge Events ───

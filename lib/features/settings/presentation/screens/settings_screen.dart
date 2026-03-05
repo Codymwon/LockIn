@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -10,6 +9,7 @@ import 'package:lock_in/core/utils/date_utils.dart';
 import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
 import 'package:lock_in/features/stats/presentation/providers/stats_provider.dart';
 import 'package:lock_in/features/achievements/presentation/providers/achievements_provider.dart';
+import 'package:lock_in/features/settings/presentation/providers/streak_settings_provider.dart';
 import 'package:lock_in/features/journal/presentation/providers/journal_provider.dart';
 import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
 import 'package:lock_in/services/storage_service.dart';
@@ -136,6 +136,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final streak = ref.watch(streakProvider);
+    final streakSettings = ref.watch(streakSettingsProvider);
     final isAmoled = ref.watch(themeProvider);
     final isHapticsEnabled = ref.watch(hapticsProvider);
     final c = AppColorScheme.of(isAmoled);
@@ -435,6 +436,167 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       ),
                                     ),
                                   ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 28),
+
+                      // ─── STREAK RULES ───
+                      _SectionLabel(
+                        text: 'STREAK RULES',
+                        color: c.textSecondary,
+                      ),
+
+                      GlassCard(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        borderRadius: 16,
+                        child: Row(
+                          children: [
+                            _SettingIcon(
+                              color: streakSettings.isStrictMode
+                                  ? c.primary
+                                  : c.textSecondary,
+                              icon: PhosphorIconsDuotone.shieldCheck,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Strict Mode',
+                                    style: TextStyle(
+                                      color: c.textPrimary,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Reset streak to 0 on relapse',
+                                    style: TextStyle(
+                                      color: c.textSecondary.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch.adaptive(
+                              value: streakSettings.isStrictMode,
+                              onChanged: (val) {
+                                ref
+                                    .read(hapticsProvider.notifier)
+                                    .selectionClick();
+                                ref
+                                    .read(streakSettingsProvider.notifier)
+                                    .toggleStrictMode(val);
+                              },
+                              activeColor: c.primary,
+                              activeTrackColor: c.primary.withValues(
+                                alpha: 0.3,
+                              ),
+                              inactiveThumbColor: c.textSecondary,
+                              inactiveTrackColor: c.surfaceLight.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      if (!streakSettings.isStrictMode) ...[
+                        const SizedBox(height: 12),
+                        GlassCard(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          borderRadius: 16,
+                          child: Row(
+                            children: [
+                              _SettingIcon(
+                                color: c.warning,
+                                icon: PhosphorIconsDuotone.minusCircle,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Slip Penalty',
+                                      style: TextStyle(
+                                        color: c.textPrimary,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Days deducted when you slip',
+                                      style: TextStyle(
+                                        color: c.textSecondary.withValues(
+                                          alpha: 0.8,
+                                        ),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: c.surfaceLight,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<int>(
+                                    value: streakSettings.slipPenaltyDays,
+                                    icon: Icon(
+                                      PhosphorIconsDuotone.caretDown,
+                                      color: c.textSecondary,
+                                      size: 16,
+                                    ),
+                                    dropdownColor: c.surface,
+                                    style: TextStyle(
+                                      color: c.textPrimary,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    onChanged: (int? newValue) {
+                                      if (newValue != null) {
+                                        ref
+                                            .read(hapticsProvider.notifier)
+                                            .selectionClick();
+                                        ref
+                                            .read(
+                                              streakSettingsProvider.notifier,
+                                            )
+                                            .setSlipPenaltyDays(newValue);
+                                      }
+                                    },
+                                    items: [1, 2, 3, 5, 7, 14].map((int value) {
+                                      return DropdownMenuItem<int>(
+                                        value: value,
+                                        child: Text(
+                                          '$value Day${value == 1 ? '' : 's'}',
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
                                 ),
                               ),
                             ],

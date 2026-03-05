@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -11,6 +10,7 @@ import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
 import 'package:lock_in/features/streak/presentation/widgets/streak_ring.dart';
 import 'package:lock_in/features/streak/presentation/widgets/reset_dialog.dart';
+import 'package:lock_in/features/settings/presentation/providers/streak_settings_provider.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
 import 'package:lock_in/shared/widgets/glow_button.dart';
 
@@ -131,6 +131,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   ref
                                       .read(streakProvider.notifier)
                                       .resetStreak();
+                                  setState(() {
+                                    _quote = _randomQuote();
+                                  });
+                                },
+                                onSlip: () {
+                                  final penalty = ref
+                                      .read(streakSettingsProvider)
+                                      .slipPenaltyDays;
+                                  ref
+                                      .read(streakProvider.notifier)
+                                      .slipStreak(penalty);
                                   setState(() {
                                     _quote = _randomQuote();
                                   });

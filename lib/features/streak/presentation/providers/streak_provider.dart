@@ -111,6 +111,34 @@ class StreakNotifier extends Notifier<StreakState> {
     state = _loadFromStorage();
   }
 
+  /// Slip the streak (deduct penalty days instead of a full reset).
+  Future<void> slipStreak(int penaltyDays) async {
+    if (state.streakStartDate == null) return;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Shift start date forward by penaltyDays to simulate deducting days
+    DateTime newStartDate = state.streakStartDate!.add(
+      Duration(days: penaltyDays),
+    );
+
+    // If penalty puts the start date in the future, it's basically a full reset to now
+    if (newStartDate.isAfter(now)) {
+      newStartDate = now;
+    }
+
+    // We still log it as a relapse/slip, but we could choose not to update the relapseCount.
+    // Let's increment relapse count since it was a slip, or perhaps total slips?
+    // We'll increment relapse count as any reset/slip is technically a breach.
+    await StorageService.setRelapseCount(state.relapseCount + 1);
+
+    await StorageService.setStreakStartDate(newStartDate);
+    await StorageService.setLastCheckIn(today);
+
+    state = _loadFromStorage();
+  }
+
   /// Update the streak start date (e.g., user backdating their streak).
   Future<void> updateStreakStartDate(DateTime newDate) async {
     await StorageService.setStreakStartDate(newDate);
