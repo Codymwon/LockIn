@@ -115,12 +115,9 @@ class StatsNotifier extends Notifier<StatsState> {
     final nextMilestone = _getNextMilestone(streak.currentStreak);
     final currentMilestone = _getCurrentMilestone(streak.currentStreak);
     final nextDays = nextMilestone['days'] as int;
-    final prevDays = currentMilestone != null
-        ? (currentMilestone['days'] as int)
-        : 0;
-    final progress = nextDays > prevDays
-        ? (streak.currentStreak - prevDays) / (nextDays - prevDays)
-        : 0.0;
+
+    // Calculate progress as absolute (e.g. 5/10), instead of relative to the last milestone
+    final progress = nextDays > 0 ? streak.currentStreak / nextDays : 0.0;
 
     return StatsState(
       currentStreak: streak.currentStreak,

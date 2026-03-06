@@ -7,7 +7,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:lock_in/features/stats/presentation/providers/stats_provider.dart';
 import 'package:lock_in/features/urge/presentation/providers/urge_provider.dart';
 import 'package:lock_in/shared/widgets/glass_card.dart';
-import 'package:lock_in/features/stats/presentation/widgets/mood_streak_graph.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -95,13 +94,6 @@ class StatsScreen extends ConsumerWidget {
 
                 // ─── Urge Heatmap ───
                 _UrgeHeatmapCard(events: urge.events),
-                const SizedBox(height: 16),
-
-                // ─── Mood vs Streak Graph ───
-                GlassCard(
-                  padding: const EdgeInsets.all(20),
-                  child: const MoodStreakGraph(),
-                ),
                 const SizedBox(height: 16),
 
                 // Resets info
@@ -304,18 +296,18 @@ class _UrgeHeatmapCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Urge Heatmap',
+                'Urge Clock',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ],
           ),
           const SizedBox(height: 14),
           const Text(
-            'Time of day when you experience the most urges.',
+            'Radial view of the times you experience the most urges.',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 24),
-          SizedBox(height: 180, child: _UrgeHeatmapChart(events: events)),
+          Center(child: _UrgeHeatmapChart(events: events)),
         ],
       ),
     );
@@ -381,162 +373,132 @@ class _UrgeHeatmapChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 8 bins of 3 hours each
-    final List<int> bins = List.filled(8, 0);
-    for (final e in events) {
-      final hour = e.timestamp.hour;
-      final binIndex = hour ~/ 3;
-      bins[binIndex]++;
-    }
-
+    // 24 hours
+    final List<int> hourlyCounts = List.filled(24, 0);
     int maxCount = 0;
-    for (final count in bins) {
-      if (count > maxCount) maxCount = count;
+
+    for (final e in events) {
+      final int hour = e.timestamp.hour;
+      hourlyCounts[hour]++;
+      if (hourlyCounts[hour] > maxCount) {
+        maxCount = hourlyCounts[hour];
+      }
     }
 
-    final maxY = maxCount == 0 ? 1.0 : (maxCount + 1).toDouble();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        // make sure it fits
+        final maxRadius = (availableWidth / 2) - 40;
+        final baseRadius = maxRadius * 0.4;
+        final variableRadius = maxRadius * 0.6;
 
-    return BarChart(
-      BarChartData(
-        alignment: BarChartAlignment.spaceAround,
-        maxY: maxY,
-        barTouchData: BarTouchData(
-          enabled: true,
-          touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) => AppColors.surfaceLight,
-            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              return BarTooltipItem(
-                '${rod.toY.toInt()} urges\n',
-                const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+        return SizedBox(
+          height: availableWidth, // Make it square
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Clockface background labels (12a, 6a, 12p, 6p)
+              Positioned(top: 0, child: _buildClockLabel('12 AM')),
+              Positioned(bottom: 0, child: _buildClockLabel('12 PM')),
+              Positioned(right: 0, child: _buildClockLabel('6 AM')),
+              Positioned(left: 0, child: _buildClockLabel('6 PM')),
+
+              // The Radial Heatmap / Polar Area Chart
+              SizedBox(
+                width: maxRadius * 2,
+                height: maxRadius * 2,
+                child: PieChart(
+                  PieChartData(
+                    startDegreeOffset: -90, // Start at 12 o'clock
+                    sectionsSpace: 2,
+                    centerSpaceRadius: baseRadius,
+                    sections: List.generate(24, (i) {
+                      final count = hourlyCounts[i];
+
+                      // Calculate radius: base + extension based on count
+                      final double radiusExt = maxCount == 0
+                          ? 10.0
+                          : (count / maxCount) * variableRadius;
+
+                      final radius = radiusExt < 10.0 ? 10.0 : radiusExt;
+
+                      return PieChartSectionData(
+                        value: 1, // Equal width for all 24 hours
+                        radius: radius,
+                        color: _getColorForCount(count, maxCount),
+                        showTitle: false,
+                        badgeWidget: _buildTooltipBadge(i, count),
+                        badgePositionPercentageOffset: 1.2,
+                      );
+                    }),
+                  ),
                 ),
+              ),
+
+              // Center Text
+              Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextSpan(
-                    text: _getBinLabel(groupIndex),
+                  Text(
+                    '${events.length}',
                     style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'Urges',
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
-              );
-            },
-          ),
-        ),
-        titlesData: FlTitlesData(
-          show: true,
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    _getBinShortLabel(value.toInt()),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                );
-              },
-              reservedSize: 28,
-            ),
-          ),
-          leftTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-        ),
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: maxCount > 0
-              ? (maxCount / 4).clamp(1, double.infinity).ceilToDouble()
-              : 1,
-          getDrawingHorizontalLine: (value) => FlLine(
-            color: AppColors.surfaceLight.withValues(alpha: 0.2),
-            strokeWidth: 1,
-            dashArray: [4, 4],
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        barGroups: List.generate(8, (i) {
-          return BarChartGroupData(
-            x: i,
-            barRods: [
-              BarChartRodData(
-                toY: bins[i].toDouble(),
-                color: const Color(0xFFEF5350), // Reddish
-                width: 16,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(4),
-                ),
-                backDrawRodData: BackgroundBarChartRodData(
-                  show: true,
-                  toY: maxY,
-                  color: AppColors.surfaceLight.withValues(alpha: 0.3),
-                ),
               ),
             ],
-          );
-        }),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildClockLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: AppColors.textSecondary,
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
       ),
     );
   }
 
-  String _getBinLabel(int index) {
-    switch (index) {
-      case 0:
-        return '12 AM - 3 AM';
-      case 1:
-        return '3 AM - 6 AM';
-      case 2:
-        return '6 AM - 9 AM';
-      case 3:
-        return '9 AM - 12 PM';
-      case 4:
-        return '12 PM - 3 PM';
-      case 5:
-        return '3 PM - 6 PM';
-      case 6:
-        return '6 PM - 9 PM';
-      case 7:
-        return '9 PM - 12 AM';
-      default:
-        return '';
-    }
+  Widget _buildTooltipBadge(int hour, int count) {
+    if (count == 0) return const SizedBox.shrink();
+
+    // Only show badge when tapped/hovered? fl_chart PieChart tooltip
+    // requires touchData or custom badges. Since touchData is complex for PieChart
+    // without a stateful widget, we'll let the user tap and see an invisible badge
+    // or just leave it clean and beautiful.
+    return const SizedBox.shrink();
   }
 
-  String _getBinShortLabel(int index) {
-    switch (index) {
-      case 0:
-        return '12a';
-      case 1:
-        return '3a';
-      case 2:
-        return '6a';
-      case 3:
-        return '9a';
-      case 4:
-        return '12p';
-      case 5:
-        return '3p';
-      case 6:
-        return '6p';
-      case 7:
-        return '9p';
-      default:
-        return '';
+  Color _getColorForCount(int count, int maxCount) {
+    if (count == 0 || maxCount == 0) {
+      return AppColors.surfaceLight.withValues(alpha: 0.3);
+    }
+
+    final ratio = count / maxCount;
+    if (ratio <= 0.25) {
+      return const Color(0xFFEF9A9A).withValues(alpha: 0.8);
+    } else if (ratio <= 0.5) {
+      return const Color(0xFFEF5350).withValues(alpha: 0.9);
+    } else if (ratio <= 0.75) {
+      return const Color(0xFFD32F2F);
+    } else {
+      return const Color(0xFFB71C1C);
     }
   }
 }
