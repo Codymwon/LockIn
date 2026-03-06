@@ -35,7 +35,13 @@ class UrgeState {
 class UrgeNotifier extends Notifier<UrgeState> {
   @override
   UrgeState build() {
+    _initPruning();
     return _loadEvents();
+  }
+
+  Future<void> _initPruning() async {
+    await StorageService.pruneOldUrges(10);
+    state = _loadEvents();
   }
 
   UrgeState _loadEvents() {
@@ -56,6 +62,7 @@ class UrgeNotifier extends Notifier<UrgeState> {
       'timestamp': now.millisecondsSinceEpoch,
       'survivalSeconds': survivalSeconds,
     });
+    await StorageService.pruneOldUrges(10);
     state = _loadEvents();
   }
 

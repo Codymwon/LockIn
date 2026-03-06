@@ -87,6 +87,25 @@ class StorageService {
     await _urgeBox.add(event);
   }
 
+  static Future<void> pruneOldUrges(int daysToKeep) async {
+    final now = DateTime.now();
+    final threshold = now
+        .subtract(Duration(days: daysToKeep))
+        .millisecondsSinceEpoch;
+    final keysToDelete = <dynamic>[];
+
+    for (var key in _urgeBox.keys) {
+      final event = _urgeBox.get(key);
+      if (event != null && (event['timestamp'] as int) < threshold) {
+        keysToDelete.add(key);
+      }
+    }
+
+    if (keysToDelete.isNotEmpty) {
+      await _urgeBox.deleteAll(keysToDelete);
+    }
+  }
+
   static List<Map<dynamic, dynamic>> getUrgeEvents() {
     return _urgeBox.values.toList();
   }

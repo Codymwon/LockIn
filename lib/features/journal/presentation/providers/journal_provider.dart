@@ -30,7 +30,7 @@ class JournalNotifier extends Notifier<JournalState> {
   JournalState _loadEntries() {
     final raw = StorageService.getJournalEntries();
     final entries = <JournalEntry>[];
-    for (int i = 0; i < raw.length; i++) {
+    for (int i = raw.length - 1; i >= 0; i--) {
       final e = raw[i];
       entries.add(
         JournalEntry(
@@ -41,7 +41,6 @@ class JournalNotifier extends Notifier<JournalState> {
         ),
       );
     }
-    entries.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return JournalState(entries: entries);
   }
 
