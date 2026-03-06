@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
+import 'package:lock_in/core/utils/date_utils.dart';
 
 /// Animated circular progress ring for the streak display.
 /// Shows:
@@ -72,16 +73,17 @@ class _StreakRingState extends State<StreakRing>
   }
 
   void _updateAnimation() {
-    final range = widget.targetDays - widget.previousMilestone;
-    // Use fractional days for smooth intra-day progress
     double elapsed = widget.currentStreak.toDouble();
     if (widget.streakStartDate != null) {
       elapsed =
           DateTime.now().difference(widget.streakStartDate!).inSeconds /
           86400.0; // seconds in a day
     }
-    final done = elapsed - widget.previousMilestone;
-    final progress = range > 0 ? (done / range).clamp(0.0, 1.0) : 0.0;
+
+    final progress = widget.targetDays > 0
+        ? (elapsed / widget.targetDays).clamp(0.0, 1.0)
+        : 0.0;
+
     _progressAnim = Tween<double>(
       begin: 0,
       end: progress,
@@ -110,6 +112,21 @@ class _StreakRingState extends State<StreakRing>
         final minutes = elapsed.inMinutes % 60;
         final seconds = elapsed.inSeconds % 60;
 
+        final liveDays = widget.streakStartDate != null
+            ? AppDateUtils.calculateStreak(widget.streakStartDate!)
+            : widget.currentStreak;
+
+        double liveElapsed = liveDays.toDouble();
+        if (widget.streakStartDate != null && !elapsed.isNegative) {
+          liveElapsed = elapsed.inSeconds / 86400.0;
+        }
+        final liveProgress = widget.targetDays > 0
+            ? (liveElapsed / widget.targetDays).clamp(0.0, 1.0)
+            : 0.0;
+        final currentRingValue = _controller.isAnimating
+            ? _progressAnim.value
+            : liveProgress;
+
         return SizedBox(
           width: 240,
           height: 240,
@@ -125,9 +142,9 @@ class _StreakRingState extends State<StreakRing>
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.primary.withValues(
-                        alpha: 0.15 + (_progressAnim.value * 0.15),
+                        alpha: 0.15 + (currentRingValue * 0.15),
                       ),
-                      blurRadius: 40 + (_progressAnim.value * 20),
+                      blurRadius: 40 + (currentRingValue * 20),
                       spreadRadius: 5,
                     ),
                   ],
@@ -146,7 +163,7 @@ class _StreakRingState extends State<StreakRing>
               CustomPaint(
                 size: const Size(220, 220),
                 painter: _RingPainter(
-                  progress: _progressAnim.value,
+                  progress: currentRingValue,
                   color: AppColors.primary,
                   strokeWidth: 8,
                   useGradient: true,
@@ -162,7 +179,7 @@ class _StreakRingState extends State<StreakRing>
 
                   // 2. Day X
                   Text(
-                    'Day ${widget.currentStreak}',
+                    'Day $liveDays',
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                       fontSize: 48,

@@ -1,18 +1,53 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/features/calendar/presentation/providers/calendar_provider.dart';
+import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
 
-class CalendarScreen extends ConsumerWidget {
+class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
+}
+
+class _CalendarScreenState extends ConsumerState<CalendarScreen>
+    with WidgetsBindingObserver {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final calendarState = ref.watch(calendarProvider);
-    final statuses = calendarState.dayStatuses;
+    final streakStart = ref.watch(streakProvider).streakStartDate;
     final c = AppColorScheme.of(ref.watch(themeProvider));
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
     return Scaffold(
       body: Container(
@@ -98,9 +133,21 @@ class CalendarScreen extends ConsumerWidget {
                           day.month,
                           day.day,
                         );
-                        final isClean = statuses[normalizedDay];
 
-                        if (isClean == true) {
+                        bool isClean = false;
+                        if (streakStart != null) {
+                          final startDay = DateTime(
+                            streakStart.year,
+                            streakStart.month,
+                            streakStart.day,
+                          );
+                          if (!normalizedDay.isBefore(startDay) &&
+                              !normalizedDay.isAfter(today)) {
+                            isClean = true;
+                          }
+                        }
+
+                        if (isClean) {
                           return Container(
                             margin: const EdgeInsets.all(4),
                             decoration: BoxDecoration(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:lock_in/core/constants/app_constants.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -13,42 +12,11 @@ import 'package:lock_in/features/stats/presentation/widgets/mood_streak_graph.da
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
 
-  Map<String, dynamic> _getNextMilestone(int currentStreak) {
-    for (final a in AppConstants.achievements) {
-      if (a['type'] != 'streak') continue;
-      if ((a['days'] as int) > currentStreak) return a;
-    }
-    return {
-      'title': 'Beyond Legend',
-      'days': currentStreak + 365,
-      'icon': PhosphorIconsDuotone.crown,
-    };
-  }
-
-  Map<String, dynamic>? _getCurrentMilestone(int currentStreak) {
-    Map<String, dynamic>? current;
-    for (final a in AppConstants.achievements) {
-      if (a['type'] != 'streak') continue;
-      if ((a['days'] as int) <= currentStreak) current = a;
-    }
-    return current;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(statsProvider);
     final urge = ref.watch(urgeProvider);
     final c = AppColorScheme.of(ref.watch(themeProvider));
-
-    final nextMilestone = _getNextMilestone(stats.currentStreak);
-    final currentMilestone = _getCurrentMilestone(stats.currentStreak);
-    final nextDays = nextMilestone['days'] as int;
-    final prevDays = currentMilestone != null
-        ? (currentMilestone['days'] as int)
-        : 0;
-    final progress = nextDays > prevDays
-        ? (stats.currentStreak - prevDays) / (nextDays - prevDays)
-        : 0.0;
 
     return Scaffold(
       body: Container(
@@ -122,129 +90,11 @@ class StatsScreen extends ConsumerWidget {
                 const SizedBox(height: 28),
 
                 // ─── Milestone Progress ───
-                GlassCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            PhosphorIconsDuotone.target,
-                            size: 18,
-                            color: AppColors.accent,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Next Milestone',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Milestone title & icon
-                      Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              nextMilestone['icon'] as IconData,
-                              size: 22,
-                              color: AppColors.accent,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  nextMilestone['title'] as String,
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w700),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${nextDays - stats.currentStreak} days to go',
-                                  style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            'Day ${stats.currentStreak}/$nextDays',
-                            style: TextStyle(
-                              color: AppColors.accent,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      // Progress bar
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: progress.clamp(0.0, 1.0),
-                          minHeight: 8,
-                          backgroundColor: AppColors.surfaceLight.withValues(
-                            alpha: 0.4,
-                          ),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _MilestoneProgressCard(stats: stats),
                 const SizedBox(height: 16),
 
                 // ─── Urge Heatmap ───
-                GlassCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            PhosphorIconsDuotone.fire,
-                            size: 18,
-                            color: const Color(0xFFEF5350),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Urge Heatmap',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        'Time of day when you experience the most urges.',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        height: 180,
-                        child: _UrgeHeatmapChart(events: urge.events),
-                      ),
-                    ],
-                  ),
-                ),
+                _UrgeHeatmapCard(events: urge.events),
                 const SizedBox(height: 16),
 
                 // ─── Mood vs Streak Graph ───
@@ -255,69 +105,218 @@ class StatsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 // Resets info
-                GlassCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              PhosphorIconsDuotone.arrowCounterClockwise,
-                              color: AppColors.warning,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${stats.relapseCount} Resets',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  stats.topTrigger != null
-                                      ? '${stats.topTriggerPercentage!.toStringAsFixed(0)}% of your resets are caused by ${stats.topTrigger}.'
-                                      : 'Every reset is a new beginning',
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (stats.triggerCounts.isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          height: 140,
-                          child: _TriggerPieChart(
-                            triggerCounts: stats.triggerCounts,
-                            totalTriggers: stats.validTriggers,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                _ResetsInfoCard(stats: stats),
                 const SizedBox(height: 32),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ResetsInfoCard extends StatelessWidget {
+  final StatsState stats;
+
+  const _ResetsInfoCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  PhosphorIconsDuotone.arrowCounterClockwise,
+                  color: AppColors.warning,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${stats.relapseCount} Resets',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      stats.topTrigger != null
+                          ? '${stats.topTriggerPercentage!.toStringAsFixed(0)}% of your resets are caused by ${stats.topTrigger}.'
+                          : 'Every reset is a new beginning',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (stats.triggerCounts.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 140,
+              child: _TriggerPieChart(
+                triggerCounts: stats.triggerCounts,
+                totalTriggers: stats.validTriggers,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MilestoneProgressCard extends StatelessWidget {
+  final StatsState stats;
+
+  const _MilestoneProgressCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    final nextMilestone = stats.nextMilestone;
+    if (nextMilestone.isEmpty) {
+      return const SizedBox.shrink(); // Safety check
+    }
+
+    final nextDays = nextMilestone['days'] as int;
+    final progress = stats.milestoneProgress;
+
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                PhosphorIconsDuotone.target,
+                size: 18,
+                color: AppColors.accent,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Next Milestone',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Milestone title & icon
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  nextMilestone['icon'] as IconData,
+                  size: 22,
+                  color: AppColors.accent,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      nextMilestone['title'] as String,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${nextDays - stats.currentStreak} days to go',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                'Day ${stats.currentStreak}/$nextDays',
+                style: const TextStyle(
+                  color: AppColors.accent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: AppColors.surfaceLight.withValues(alpha: 0.4),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UrgeHeatmapCard extends StatelessWidget {
+  final List<UrgeEvent> events;
+
+  const _UrgeHeatmapCard({required this.events});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                PhosphorIconsDuotone.fire,
+                size: 18,
+                color: Color(0xFFEF5350),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Urge Heatmap',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Time of day when you experience the most urges.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(height: 180, child: _UrgeHeatmapChart(events: events)),
+        ],
       ),
     );
   }
@@ -416,7 +415,7 @@ class _UrgeHeatmapChart extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: _getBinLabel(groupIndex),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -437,7 +436,7 @@ class _UrgeHeatmapChart extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     _getBinShortLabel(value.toInt()),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,

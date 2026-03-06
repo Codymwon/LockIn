@@ -25,18 +25,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   DateTime? _previewDate;
 
-  String _formatDuration(Duration d) {
-    final days = d.inDays;
-    final hours = d.inHours % 24;
-    final minutes = d.inMinutes % 60;
-    final parts = <String>[];
-    if (days > 0) parts.add('$days day${days == 1 ? '' : 's'}');
-    if (hours > 0) parts.add('$hours hr${hours == 1 ? '' : 's'}');
-    if (minutes > 0) parts.add('$minutes min');
-    if (parts.isEmpty) return 'Just started';
-    return parts.join(', ');
-  }
-
   Future<void> _pickDateTime() async {
     final streak = ref.read(streakProvider);
     final now = DateTime.now();
@@ -136,9 +124,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final streak = ref.watch(streakProvider);
-    final streakSettings = ref.watch(streakSettingsProvider);
     final isAmoled = ref.watch(themeProvider);
-    final isHapticsEnabled = ref.watch(hapticsProvider);
     final c = AppColorScheme.of(isAmoled);
     final startDate = _previewDate ?? streak.streakStartDate;
     final now = DateTime.now();
@@ -203,470 +189,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ─── APPEARANCE ───
-                      _SectionLabel(text: 'APPEARANCE', color: c.textSecondary),
-
-                      GlassCard(
-                        padding: const EdgeInsets.all(0),
-                        borderRadius: 16,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
-                          ),
-                          child: Row(
-                            children: [
-                              _SettingIcon(
-                                color: isAmoled ? Colors.white : c.primary,
-                                icon: PhosphorIconsDuotone.moon,
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'AMOLED Black',
-                                      style: TextStyle(
-                                        color: c.textPrimary,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Pure black for OLED displays',
-                                      style: TextStyle(
-                                        color: c.textSecondary.withValues(
-                                          alpha: 0.8,
-                                        ),
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Switch.adaptive(
-                                value: isAmoled,
-                                onChanged: (_) {
-                                  ref
-                                      .read(hapticsProvider.notifier)
-                                      .selectionClick();
-                                  ref.read(themeProvider.notifier).toggle();
-                                },
-                                activeColor: c.primary,
-                                activeTrackColor: c.primary.withValues(
-                                  alpha: 0.3,
-                                ),
-                                inactiveThumbColor: c.textSecondary,
-                                inactiveTrackColor: c.surfaceLight.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      GlassCard(
-                        padding: const EdgeInsets.all(0),
-                        borderRadius: 16,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
-                          ),
-                          child: Row(
-                            children: [
-                              _SettingIcon(
-                                color: isHapticsEnabled
-                                    ? c.primary
-                                    : c.textSecondary,
-                                icon: PhosphorIconsDuotone.vibrate,
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Haptic Feedback',
-                                      style: TextStyle(
-                                        color: c.textPrimary,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Vibrations on taps and actions',
-                                      style: TextStyle(
-                                        color: c.textSecondary.withValues(
-                                          alpha: 0.8,
-                                        ),
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Switch.adaptive(
-                                value: isHapticsEnabled,
-                                onChanged: (_) {
-                                  ref.read(hapticsProvider.notifier).toggle();
-                                },
-                                activeColor: c.primary,
-                                activeTrackColor: c.primary.withValues(
-                                  alpha: 0.3,
-                                ),
-                                inactiveThumbColor: c.textSecondary,
-                                inactiveTrackColor: c.surfaceLight.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      const _AppearanceSection(),
 
                       const SizedBox(height: 28),
 
                       // ─── STREAK ───
-                      _SectionLabel(text: 'STREAK', color: c.textSecondary),
-
-                      GlassCard(
-                        padding: const EdgeInsets.all(0),
-                        borderRadius: 16,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: _pickDateTime,
-                            borderRadius: BorderRadius.circular(16),
-                            splashColor: c.primary.withValues(alpha: 0.1),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 18,
-                              ),
-                              child: Row(
-                                children: [
-                                  _SettingIcon(
-                                    color: c.primary,
-                                    icon: PhosphorIconsDuotone.calendarBlank,
-                                    accentColor: c.accent,
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Streak Start Date',
-                                          style: TextStyle(
-                                            color: c.textPrimary,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          startDate != null
-                                              ? '${AppDateUtils.formatDate(startDate)}  •  ${AppDateUtils.formatTime(startDate)}'
-                                              : 'Not started yet',
-                                          style: TextStyle(
-                                            color: c.textSecondary.withValues(
-                                              alpha: 0.8,
-                                            ),
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Icon(
-                                    PhosphorIconsDuotone.pencilSimple,
-                                    color: c.textSecondary.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    size: 18,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                      _StreakSection(
+                        startDate: startDate,
+                        streakDuration: streakDuration,
+                        onPickDateTime: _pickDateTime,
                       ),
-
-                      if (startDate != null) ...[
-                        const SizedBox(height: 16),
-                        GlassCard(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          borderRadius: 16,
-                          child: Row(
-                            children: [
-                              _SettingIcon(
-                                color: c.success,
-                                icon: PhosphorIconsDuotone.timer,
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Current Streak',
-                                      style: TextStyle(
-                                        color: c.textPrimary,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _formatDuration(streakDuration),
-                                      style: TextStyle(
-                                        color: c.success,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
 
                       const SizedBox(height: 28),
 
                       // ─── STREAK RULES ───
-                      _SectionLabel(
-                        text: 'STREAK RULES',
-                        color: c.textSecondary,
-                      ),
-
-                      GlassCard(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 14,
-                        ),
-                        borderRadius: 16,
-                        child: Row(
-                          children: [
-                            _SettingIcon(
-                              color: streakSettings.isStrictMode
-                                  ? c.primary
-                                  : c.textSecondary,
-                              icon: PhosphorIconsDuotone.shieldCheck,
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Strict Mode',
-                                    style: TextStyle(
-                                      color: c.textPrimary,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Reset streak to 0 on relapse',
-                                    style: TextStyle(
-                                      color: c.textSecondary.withValues(
-                                        alpha: 0.8,
-                                      ),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Switch.adaptive(
-                              value: streakSettings.isStrictMode,
-                              onChanged: (val) {
-                                ref
-                                    .read(hapticsProvider.notifier)
-                                    .selectionClick();
-                                ref
-                                    .read(streakSettingsProvider.notifier)
-                                    .toggleStrictMode(val);
-                              },
-                              activeColor: c.primary,
-                              activeTrackColor: c.primary.withValues(
-                                alpha: 0.3,
-                              ),
-                              inactiveThumbColor: c.textSecondary,
-                              inactiveTrackColor: c.surfaceLight.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      if (!streakSettings.isStrictMode) ...[
-                        const SizedBox(height: 12),
-                        GlassCard(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
-                          ),
-                          borderRadius: 16,
-                          child: Row(
-                            children: [
-                              _SettingIcon(
-                                color: c.warning,
-                                icon: PhosphorIconsDuotone.minusCircle,
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Slip Penalty',
-                                      style: TextStyle(
-                                        color: c.textPrimary,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Days deducted when you slip',
-                                      style: TextStyle(
-                                        color: c.textSecondary.withValues(
-                                          alpha: 0.8,
-                                        ),
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: c.surfaceLight,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<int>(
-                                    value: streakSettings.slipPenaltyDays,
-                                    icon: Icon(
-                                      PhosphorIconsDuotone.caretDown,
-                                      color: c.textSecondary,
-                                      size: 16,
-                                    ),
-                                    dropdownColor: c.surface,
-                                    style: TextStyle(
-                                      color: c.textPrimary,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    onChanged: (int? newValue) {
-                                      if (newValue != null) {
-                                        ref
-                                            .read(hapticsProvider.notifier)
-                                            .selectionClick();
-                                        ref
-                                            .read(
-                                              streakSettingsProvider.notifier,
-                                            )
-                                            .setSlipPenaltyDays(newValue);
-                                      }
-                                    },
-                                    items: [1, 2, 3, 5, 7, 14].map((int value) {
-                                      return DropdownMenuItem<int>(
-                                        value: value,
-                                        child: Text(
-                                          '$value Day${value == 1 ? '' : 's'}',
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      const _StreakRulesSection(),
 
                       const SizedBox(height: 28),
 
                       // ─── DANGER ZONE ───
-                      _SectionLabel(text: 'DANGER ZONE', color: c.warning),
-
-                      GlassCard(
-                        padding: const EdgeInsets.all(0),
-                        borderRadius: 16,
-                        borderColor: c.warning.withValues(alpha: 0.2),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _showResetConfirmation(c),
-                            borderRadius: BorderRadius.circular(16),
-                            splashColor: c.warning.withValues(alpha: 0.1),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 18,
-                              ),
-                              child: Row(
-                                children: [
-                                  _SettingIcon(
-                                    color: c.warning,
-                                    icon: PhosphorIconsDuotone.trash,
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Reset All Data',
-                                          style: TextStyle(
-                                            color: c.warning,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Delete all stats, badges, journals and urges',
-                                          style: TextStyle(
-                                            color: c.textSecondary.withValues(
-                                              alpha: 0.8,
-                                            ),
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Icon(
-                                    PhosphorIconsDuotone.caretRight,
-                                    color: c.warning.withValues(alpha: 0.5),
-                                    size: 18,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                      _DangerZoneSection(
+                        onResetTapped: () => _showResetConfirmation(c),
                       ),
 
                       const SizedBox(height: 32),
@@ -728,6 +271,476 @@ class _SettingIcon extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(icon, color: accentColor ?? color, size: 20),
+    );
+  }
+}
+
+class _StreakSection extends ConsumerWidget {
+  final DateTime? startDate;
+  final Duration streakDuration;
+  final VoidCallback onPickDateTime;
+
+  const _StreakSection({
+    required this.startDate,
+    required this.streakDuration,
+    required this.onPickDateTime,
+  });
+
+  String _formatDuration(Duration d) {
+    final days = d.inDays;
+    final hours = d.inHours % 24;
+    final minutes = d.inMinutes % 60;
+    final parts = <String>[];
+    if (days > 0) parts.add('$days day${days == 1 ? '' : 's'}');
+    if (hours > 0) parts.add('$hours hr${hours == 1 ? '' : 's'}');
+    if (minutes > 0) parts.add('$minutes min');
+    if (parts.isEmpty) return 'Just started';
+    return parts.join(', ');
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColorScheme.of(ref.watch(themeProvider));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionLabel(text: 'STREAK', color: c.textSecondary),
+        GlassCard(
+          padding: const EdgeInsets.all(0),
+          borderRadius: 16,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPickDateTime,
+              borderRadius: BorderRadius.circular(16),
+              splashColor: c.primary.withValues(alpha: 0.1),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 18,
+                ),
+                child: Row(
+                  children: [
+                    _SettingIcon(
+                      color: c.primary,
+                      icon: PhosphorIconsDuotone.calendarBlank,
+                      accentColor: c.accent,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Streak Start Date',
+                            style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            startDate != null
+                                ? '${AppDateUtils.formatDate(startDate!)}  •  ${AppDateUtils.formatTime(startDate!)}'
+                                : 'Not started yet',
+                            style: TextStyle(
+                              color: c.textSecondary.withValues(alpha: 0.8),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      PhosphorIconsDuotone.pencilSimple,
+                      color: c.textSecondary.withValues(alpha: 0.5),
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (startDate != null) ...[
+          const SizedBox(height: 16),
+          GlassCard(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            borderRadius: 16,
+            child: Row(
+              children: [
+                _SettingIcon(
+                  color: c.success,
+                  icon: PhosphorIconsDuotone.timer,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Current Streak',
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatDuration(streakDuration),
+                        style: TextStyle(
+                          color: c.success,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _StreakRulesSection extends ConsumerWidget {
+  const _StreakRulesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColorScheme.of(ref.watch(themeProvider));
+    final streakSettings = ref.watch(streakSettingsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionLabel(text: 'STREAK RULES', color: c.textSecondary),
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          borderRadius: 16,
+          child: Row(
+            children: [
+              _SettingIcon(
+                color: streakSettings.isStrictMode
+                    ? c.primary
+                    : c.textSecondary,
+                icon: PhosphorIconsDuotone.shieldCheck,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Strict Mode',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Reset streak to 0 on relapse',
+                      style: TextStyle(
+                        color: c.textSecondary.withValues(alpha: 0.8),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(
+                value: streakSettings.isStrictMode,
+                onChanged: (val) {
+                  ref.read(hapticsProvider.notifier).selectionClick();
+                  ref
+                      .read(streakSettingsProvider.notifier)
+                      .toggleStrictMode(val);
+                },
+                activeColor: c.primary,
+                activeTrackColor: c.primary.withValues(alpha: 0.3),
+                inactiveThumbColor: c.textSecondary,
+                inactiveTrackColor: c.surfaceLight.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
+        ),
+        if (!streakSettings.isStrictMode) ...[
+          const SizedBox(height: 12),
+          GlassCard(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            borderRadius: 16,
+            child: Row(
+              children: [
+                _SettingIcon(
+                  color: c.warning,
+                  icon: PhosphorIconsDuotone.minusCircle,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Slip Penalty',
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Days deducted when you slip',
+                        style: TextStyle(
+                          color: c.textSecondary.withValues(alpha: 0.8),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: c.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: streakSettings.slipPenaltyDays,
+                      icon: Icon(
+                        PhosphorIconsDuotone.caretDown,
+                        color: c.textSecondary,
+                        size: 16,
+                      ),
+                      dropdownColor: c.surface,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      onChanged: (int? newValue) {
+                        if (newValue != null) {
+                          ref.read(hapticsProvider.notifier).selectionClick();
+                          ref
+                              .read(streakSettingsProvider.notifier)
+                              .setSlipPenaltyDays(newValue);
+                        }
+                      },
+                      items: [1, 2, 3, 5, 7, 14].map((int value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('$value Day${value == 1 ? '' : 's'}'),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AppearanceSection extends ConsumerWidget {
+  const _AppearanceSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAmoled = ref.watch(themeProvider);
+    final isHapticsEnabled = ref.watch(hapticsProvider);
+    final c = AppColorScheme.of(isAmoled);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionLabel(text: 'APPEARANCE', color: c.textSecondary),
+        GlassCard(
+          padding: const EdgeInsets.all(0),
+          borderRadius: 16,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              children: [
+                _SettingIcon(
+                  color: isAmoled ? Colors.white : c.primary,
+                  icon: PhosphorIconsDuotone.moon,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AMOLED Black',
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Pure black for OLED displays',
+                        style: TextStyle(
+                          color: c.textSecondary.withValues(alpha: 0.8),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: isAmoled,
+                  onChanged: (_) {
+                    ref.read(hapticsProvider.notifier).selectionClick();
+                    ref.read(themeProvider.notifier).toggle();
+                  },
+                  activeColor: c.primary,
+                  activeTrackColor: c.primary.withValues(alpha: 0.3),
+                  inactiveThumbColor: c.textSecondary,
+                  inactiveTrackColor: c.surfaceLight.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        GlassCard(
+          padding: const EdgeInsets.all(0),
+          borderRadius: 16,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              children: [
+                _SettingIcon(
+                  color: isHapticsEnabled ? c.primary : c.textSecondary,
+                  icon: PhosphorIconsDuotone.vibrate,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Haptic Feedback',
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Vibrations on taps and actions',
+                        style: TextStyle(
+                          color: c.textSecondary.withValues(alpha: 0.8),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: isHapticsEnabled,
+                  onChanged: (_) {
+                    ref.read(hapticsProvider.notifier).toggle();
+                  },
+                  activeColor: c.primary,
+                  activeTrackColor: c.primary.withValues(alpha: 0.3),
+                  inactiveThumbColor: c.textSecondary,
+                  inactiveTrackColor: c.surfaceLight.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DangerZoneSection extends ConsumerWidget {
+  final VoidCallback onResetTapped;
+
+  const _DangerZoneSection({required this.onResetTapped});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColorScheme.of(ref.watch(themeProvider));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionLabel(text: 'DANGER ZONE', color: c.warning),
+        GlassCard(
+          padding: const EdgeInsets.all(0),
+          borderRadius: 16,
+          borderColor: c.warning.withValues(alpha: 0.2),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onResetTapped,
+              borderRadius: BorderRadius.circular(16),
+              splashColor: c.warning.withValues(alpha: 0.1),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 18,
+                ),
+                child: Row(
+                  children: [
+                    _SettingIcon(
+                      color: c.warning,
+                      icon: PhosphorIconsDuotone.trash,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Reset All Data',
+                            style: TextStyle(
+                              color: c.warning,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Delete all stats, badges, journals and urges',
+                            style: TextStyle(
+                              color: c.textSecondary.withValues(alpha: 0.8),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      PhosphorIconsDuotone.caretRight,
+                      color: c.warning.withValues(alpha: 0.5),
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
