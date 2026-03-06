@@ -27,21 +27,73 @@ class CalendarNotifier extends Notifier<CalendarState> {
 
   CalendarState _buildCalendarData() {
     final streakStart = StorageService.getStreakStartDate();
+    final resetEvents = StorageService.getResetEvents();
+    final journalEntries = StorageService.getJournalEntries();
+
     final Map<DateTime, bool> statuses = {};
 
-    if (streakStart != null) {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      var current = DateTime(
-        streakStart.year,
-        streakStart.month,
-        streakStart.day,
-      );
+    if (streakStart == null && resetEvents.isEmpty && journalEntries.isEmpty) {
+      return CalendarState(dayStatuses: statuses, focusedMonth: DateTime.now());
+    }
 
-      while (!current.isAfter(today)) {
-        statuses[current] = true;
-        current = current.add(const Duration(days: 1));
+    // Determine the very first day of app usage
+    DateTime? earliestDate;
+
+    if (streakStart != null) {
+      earliestDate = streakStart;
+    }
+
+    for (final event in resetEvents) {
+      final ts = event['timestamp'] as int?;
+      if (ts != null) {
+        final d = DateTime.fromMillisecondsSinceEpoch(ts);
+        if (earliestDate == null || d.isBefore(earliestDate)) {
+          earliestDate = d;
+        }
       }
+    }
+
+    for (final entry in journalEntries) {
+      final ts = entry['timestamp'] as int?;
+      if (ts != null) {
+        final d = DateTime.fromMillisecondsSinceEpoch(ts);
+        if (earliestDate == null || d.isBefore(earliestDate)) {
+          earliestDate = d;
+        }
+      }
+    }
+
+    if (earliestDate == null) {
+      return CalendarState(dayStatuses: statuses, focusedMonth: DateTime.now());
+    }
+
+    // Standardize all dates to midnight for comparison
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Set of days where a relapse/reset occurred
+    final Set<DateTime> relapseDays = {};
+    for (final event in resetEvents) {
+      final ts = event['timestamp'] as int?;
+      if (ts != null) {
+        final d = DateTime.fromMillisecondsSinceEpoch(ts);
+        relapseDays.add(DateTime(d.year, d.month, d.day));
+      }
+    }
+
+    var current = DateTime(
+      earliestDate.year,
+      earliestDate.month,
+      earliestDate.day,
+    );
+
+    while (!current.isAfter(today)) {
+      if (relapseDays.contains(current)) {
+        statuses[current] = false; // Relapse day
+      } else {
+        statuses[current] = true; // Clean day
+      }
+      current = current.add(const Duration(days: 1));
     }
 
     return CalendarState(dayStatuses: statuses, focusedMonth: DateTime.now());

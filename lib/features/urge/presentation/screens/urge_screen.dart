@@ -248,7 +248,10 @@ class _UrgeScreenState extends ConsumerState<UrgeScreen>
                         SnackBar(
                           content: const Text(
                             'You conquered that urge! 💪',
-                            style: TextStyle(fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                           backgroundColor: AppColors.surface,
                           behavior: SnackBarBehavior.floating,

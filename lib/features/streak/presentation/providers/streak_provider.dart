@@ -97,12 +97,13 @@ class StreakNotifier extends Notifier<StreakState> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
+    await StorageService.addResetEvent({
+      'timestamp': now.millisecondsSinceEpoch,
+      'trigger': trigger ?? 'Unknown',
+      'type': 'reset',
+    });
+
     if (trigger != null) {
-      await StorageService.addResetEvent({
-        'timestamp': now.millisecondsSinceEpoch,
-        'trigger': trigger,
-        'type': 'reset',
-      });
       await StorageService.addJournalEntry({
         'text': 'Streak reset due to: $trigger. Notes: ',
         'timestamp': now.millisecondsSinceEpoch,
@@ -131,12 +132,13 @@ class StreakNotifier extends Notifier<StreakState> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
+    await StorageService.addResetEvent({
+      'timestamp': now.millisecondsSinceEpoch,
+      'trigger': trigger ?? 'Unknown',
+      'type': 'slip',
+    });
+
     if (trigger != null) {
-      await StorageService.addResetEvent({
-        'timestamp': now.millisecondsSinceEpoch,
-        'trigger': trigger,
-        'type': 'slip',
-      });
       await StorageService.addJournalEntry({
         'text': 'Streak slip ($penaltyDays days) due to: $trigger. Notes: ',
         'timestamp': now.millisecondsSinceEpoch,

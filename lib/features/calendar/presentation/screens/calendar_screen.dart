@@ -5,7 +5,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:lock_in/core/theme/app_theme.dart';
 import 'package:lock_in/core/theme/theme_provider.dart';
 import 'package:lock_in/features/calendar/presentation/providers/calendar_provider.dart';
-import 'package:lock_in/features/streak/presentation/providers/streak_provider.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -44,10 +43,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen>
   @override
   Widget build(BuildContext context) {
     final calendarState = ref.watch(calendarProvider);
-    final streakStart = ref.watch(streakProvider).streakStartDate;
     final c = AppColorScheme.of(ref.watch(themeProvider));
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
 
     return Scaffold(
       body: Container(
@@ -134,20 +130,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen>
                           day.day,
                         );
 
-                        bool isClean = false;
-                        if (streakStart != null) {
-                          final startDay = DateTime(
-                            streakStart.year,
-                            streakStart.month,
-                            streakStart.day,
-                          );
-                          if (!normalizedDay.isBefore(startDay) &&
-                              !normalizedDay.isAfter(today)) {
-                            isClean = true;
-                          }
-                        }
+                        final status = calendarState.dayStatuses[normalizedDay];
 
-                        if (isClean) {
+                        if (status == true) {
+                          // Clean day
                           return Container(
                             margin: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
@@ -163,6 +149,33 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen>
                                 '${day.day}',
                                 style: const TextStyle(
                                   color: AppColors.accent,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          );
+                        } else if (status == false) {
+                          // Relapse day
+                          return Container(
+                            margin: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFFEF5350,
+                              ).withValues(alpha: 0.25),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(
+                                  0xFFEF5350,
+                                ).withValues(alpha: 0.4),
+                                width: 1,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${day.day}',
+                                style: const TextStyle(
+                                  color: Color(0xFFEF5350),
                                   fontWeight: FontWeight.w600,
                                   fontSize: 13,
                                 ),
@@ -194,7 +207,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen>
                       color: AppColors.primary.withValues(alpha: 0.25),
                       label: 'Clean Day',
                     ),
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 16),
+                    const _LegendDot(
+                      color: Color(0xFFEF5350),
+                      label: 'Relapse',
+                    ),
+                    const SizedBox(width: 16),
                     _LegendDot(color: AppColors.primary, label: 'Today'),
                   ],
                 ),
